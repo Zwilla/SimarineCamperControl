@@ -1,0 +1,457 @@
+{
+  "0": {
+    "name": "SC287981",
+    "name2": "xxxxxxxxx",
+    "val 3.0": 32735,
+    "val 3.1": 59394,
+    "val 11.0": 49320,
+    "val 11.1": 257,
+    "Port": 5001,
+    "val 13.0": 49320,
+    "val 13.1": 511,
+    "val 14.0": 0,
+    "val 14.1": 43210,
+    "val 29.0": 0,
+    "val 29.1": 28,
+    "type": "10 System",
+    "pos": 0
+  },
+  "1": {
+    "val 1": 32703,
+    "val 2": 64173,
+    "val 7200": 7200,
+    "val 5": 32703,
+    "val 3": 21477,
+    "val 4": 33696,
+    "type": "07 XX",
+    "pos": 30
+  },
+  "2": {
+    "name": "Sensor 1",
+    "val.4.0": 32703,
+    "val.4.1": 64173,
+    "val.9.0": 20021,
+    "val.9.1": 29996,
+    "type": "04 Sensor",
+    "pos": 38
+  },
+  "3": {
+    "type": "reserved 0.0",
+    "pos": 48
+  },
+  "4": {
+    "type": "reserved 0.0",
+    "pos": 50
+  },
+  "5": {
+    "name": "Barometer",
+    "pressure": 131071,
+    "high.min": 32703,
+    "high.max": 64173,
+    "low.min": 32481,
+    "low.max": 32267,
+    "type": "barometer",
+    "pos": 52
+  },
+  "6": {
+    "name": "PICO INTERNAL",
+    "volt": 0.195,
+    "volt max": 64173,
+    "set a": 1,
+    "set b": 35,
+    "amp a": 1919,
+    "amp b": 8176,
+    "type": "volt",
+    "pos": 62,
+    "current": -1.94
+  },
+  "7": {
+    "type": "reserved 0.0",
+    "pos": 69
+  },
+  "8": {
+    "type": "reserved 0.0",
+    "pos": 71
+  },
+  "9": {
+    "type": "reserved 0.0",
+    "pos": 73
+  },
+  "10": {
+    "name": "SCC8",
+    "val a": 32703,
+    "val b": 64173,
+    "Switch.1.on.off": 0,
+    "Switch.2.on.off": 0,
+    "Switch.3.on.off": 0,
+    "Switch.4.on.off": 0,
+    "Switch.5.on.off": 0,
+    "Switch.6.on.off": 0,
+    "Switch.7.on.off": 0,
+    "Switch.Main.on.off": 0,
+    "type": "22 SCC8 CamperControl",
+    "pos": 75
+  },
+  "11": {
+    "name": "SPU62 [2880] 1",
+    "set a": 18046,
+    "set b": 224,
+    "Max Aamp": 0,
+    "set 35": 0,
+    "set c": 32473,
+    "set d": 55724,
+    "type": "current",
+    "pos": 88
+  },
+  "12": {
+    "name": "SPU62 [2880] 2",
+    "set a": 18046,
+    "set b": 224,
+    "Max Aamp": 0,
+    "set 35": 0,
+    "set c": 9507,
+    "set d": 7041,
+    "type": "current",
+    "pos": 101
+  },
+  "13": {
+    "name": "SPU62 [2880] 3",
+    "set a": 18046,
+    "set b": 224,
+    "Max Aamp": 0,
+    "set 35": 0,
+    "set c": 22967,
+    "set d": 53481,
+    "type": "current",
+    "pos": 114
+  },
+  "14": {
+    "name": "SPU62 [2880] 4",
+    "set a": 18046,
+    "set b": 224,
+    "Max Aamp": 0,
+    "set 35": 0,
+    "set c": 5294,
+    "set d": 38051,
+    "type": "current",
+    "pos": 127
+  },
+  "15": {
+    "name": "SPU62 [2880] 1",
+    "volt": 18046,
+    "volt max": 224,
+    "set a": 1,
+    "set b": 255,
+    "amp a": 1506,
+    "amp b": 60868,
+    "type": "volt",
+    "pos": 140
+  },
+  "16": {
+    "name": "SPU62 [2880] 2",
+    "volt": 18046,
+    "volt max": 224,
+    "set a": 2,
+    "set b": 36,
+    "amp a": 8712,
+    "amp b": 62379,
+    "type": "volt",
+    "pos": 147
+  },
+  "17": {
+    "name": "SPU62 [2880] 3",
+    "volt": 18046,
+    "volt max": 224,
+    "set a": 3,
+    "set b": 255,
+    "amp a": 10487,
+    "amp b": 59354,
+    "type": "volt",
+    "pos": 154
+  },
+  "18": {
+    "name": "SPU62 [2880] 4",
+    "volt": 18046,
+    "volt max": 224,
+    "set a": 4,
+    "set b": 30,
+    "amp a": 1547,
+    "amp b": 47887,
+    "type": "volt",
+    "pos": 161
+  },
+  "19": {
+    "name": "SPU62 [2880] 1",
+    "val.4.0": 18046,
+    "val.4.1": 224,
+    "val.8.0": 19724,
+    "val.8.1": 28157,
+    "type": "ohm",
+    "pos": 168
+  },
+  "20": {
+    "name": "SPU62 [2880] 2",
+    "val.4.0": 18046,
+    "val.4.1": 224,
+    "val.8.0": 22595,
+    "val.8.1": 13918,
+    "type": "ohm",
+    "pos": 177
+  },
+  "21": {
+    "name": "SPU62 [2880] 3",
+    "val.4.0": 18046,
+    "val.4.1": 224,
+    "val.8.0": 14986,
+    "val.8.1": 26526,
+    "type": "ohm",
+    "pos": 186
+  },
+  "22": {
+    "name": "SPU62 [2880] 4",
+    "val.4.0": 18046,
+    "val.4.1": 224,
+    "val.8.0": 242,
+    "val.8.1": 13518,
+    "type": "ohm",
+    "pos": 195
+  },
+  "23": {
+    "type": "25 reserved",
+    "pos": 204
+  },
+  "24": {
+    "type": "25 reserved",
+    "pos": 206
+  },
+  "25": {
+    "name": "SPU62 [2880]",
+    "val.4.0": 18046,
+    "val.4.1": 224,
+    "type": "23 SPU",
+    "pos": 208
+  },
+  "26": {
+    "val 127": 127,
+    "val 2500": 2500,
+    "val 11.0": 20863,
+    "val 11.1": 39889,
+    "type": "13 Nick Roll",
+    "pos": 225
+  },
+  "27": {
+    "val 127": 127,
+    "val 2500": 2500,
+    "val 11.0": 3554,
+    "val 11.1": 12928,
+    "type": "13 Nick Roll",
+    "pos": 237
+  },
+  "28": {
+    "name": "BATTERY 1",
+    "capacity.C20.Joule": 17280000,
+    "capacity.C20.Ah": 400.0,
+    "capacity.C10.Joule": 17280000,
+    "capacity.C10.Ah": 400.0,
+    "capacity.C05.Joule": 17280000,
+    "capacity.C05.Ah": 400.0,
+    "Battery.Type": "LiFePo4",
+    "TTG.avg": 1,
+    "TTG.SOC": 20.0,
+    "CEF": 100.0,
+    "is.charging": 1,
+    "type": "battery",
+    "pos": 249
+  },
+  "29": {
+    "name": "FRISCHWASSER",
+    "capacity": 200.0,
+    "fluid_type": "fresh water",
+    "fluid": "freshWater",
+    "ohm.empty": 1,
+    "ohm.5% capacity": 50,
+    "ohm.5%": 0,
+    "ohm.25%.capacity": 50.0,
+    "ohm.25%": 48,
+    "ohm.50%.capacity": 100.0,
+    "ohm.50%": 89,
+    "ohm.75%.capacity": 175.0,
+    "ohm.75%": 113,
+    "ohm.100%.capacity": 200.0,
+    "ohm.100%": 195,
+    "type": "tank",
+    "pos": 267
+  },
+  "30": {
+    "name": "STARTERBAT",
+    "capacity.C20.Joule": 3456000,
+    "capacity.C20.Ah": 80.0,
+    "capacity.C10.Joule": 3456000,
+    "capacity.C10.Ah": 80.0,
+    "capacity.C05.Joule": 3456000,
+    "capacity.C05.Ah": 80.0,
+    "Battery.Type": "LiFePo4",
+    "TTG.avg": 2,
+    "TTG.SOC": 20.0,
+    "CEF": 100.0,
+    "is.charging": 2,
+    "type": "battery",
+    "pos": 290
+  },
+  "31": {
+    "name": "BAT1.TEMP",
+    "Temperature.NTC.Type": 1,
+    "Temperature.Calibration": 7.2,
+    "Temperature.Priority": 1,
+    "Temperature.MaxTemp": 60.0,
+    "type": "thermometer",
+    "pos": 308
+  },
+  "32": {
+    "name": "BAT2.TEMP",
+    "Temperature.NTC.Type": 1,
+    "Temperature.Calibration": 7.5,
+    "Temperature.Priority": 1,
+    "Temperature.MaxTemp": 60.0,
+    "type": "thermometer",
+    "pos": 320
+  },
+  "33": {
+    "name": "STARTERBAT.TEMP",
+    "Temperature.NTC.Type": 1,
+    "Temperature.Calibration": 11.5,
+    "Temperature.Priority": 1,
+    "Temperature.MaxTemp": 60.0,
+    "type": "thermometer",
+    "pos": 332
+  },
+  "34": {
+    "name": "HEIZUNG OUT",
+    "Temperature.NTC.Type": 1,
+    "Temperature.Calibration": 0.0,
+    "Temperature.Priority": 1,
+    "Temperature.MaxTemp": 70.0,
+    "type": "thermometer",
+    "pos": 344
+  },
+  "35": {
+    "name": "BATPICO",
+    "capacity.C20.Joule": 43200,
+    "capacity.C20.Ah": 1.0,
+    "capacity.C10.Joule": 43200,
+    "capacity.C10.Ah": 1.0,
+    "capacity.C05.Joule": 43200,
+    "capacity.C05.Ah": 1.0,
+    "Battery.Type": "LiFePo4",
+    "TTG.avg": 2,
+    "TTG.SOC": 20.0,
+    "CEF": 100.0,
+    "is.charging": 2,
+    "type": "battery",
+    "pos": 356
+  },
+  "36": {
+    "name": "STARTEREINGANG ",
+    "capacity.C20.Joule": 3456000,
+    "capacity.C20.Ah": 80.0,
+    "capacity.C10.Joule": 3456000,
+    "capacity.C10.Ah": 80.0,
+    "capacity.C05.Joule": 3456000,
+    "capacity.C05.Ah": 80.0,
+    "Battery.Type": "LiFePo4",
+    "TTG.avg": 2,
+    "TTG.SOC": 20.0,
+    "CEF": 100.0,
+    "is.charging": 2,
+    "type": "battery",
+    "pos": 374
+  },
+  "37": {
+    "name": "SC303 [5450]",
+    "set a": 10351,
+    "set b": 32314,
+    "Max Aamp": 0,
+    "set 35": 0,
+    "set c": 2426,
+    "set d": 62468,
+    "type": "current",
+    "pos": 392
+  },
+  "38": {
+    "name": "SC303 [5450] 1",
+    "volt": 10351,
+    "volt max": 32314,
+    "set a": 1,
+    "set b": 28,
+    "amp a": 28066,
+    "amp b": 25761,
+    "type": "volt",
+    "pos": 405
+  },
+  "39": {
+    "name": "SC303 [5450] 2",
+    "volt": 10351,
+    "volt max": 32314,
+    "set a": 2,
+    "set b": 255,
+    "amp a": 31328,
+    "amp b": 27951,
+    "type": "volt",
+    "pos": 412
+  },
+  "40": {
+    "name": "SC303 [5450] 1",
+    "val.4.0": 10351,
+    "val.4.1": 32314,
+    "val.8.0": 16236,
+    "val.8.1": 19099,
+    "type": "ohm",
+    "pos": 419
+  },
+  "41": {
+    "name": "SC303 [5450] 2",
+    "val.4.0": 10351,
+    "val.4.1": 32314,
+    "val.8.0": 4471,
+    "val.8.1": 52912,
+    "type": "ohm",
+    "pos": 428
+  },
+  "42": {
+    "name": "SC303 [5450] 3",
+    "val.4.0": 10351,
+    "val.4.1": 32314,
+    "val.8.0": 17084,
+    "val.8.1": 56498,
+    "type": "ohm",
+    "pos": 437
+  },
+  "43": {
+    "name": "SC303.TEMP",
+    "Temperature.NTC.Type": 1,
+    "Temperature.Calibration": 0.0,
+    "Temperature.Priority": 1,
+    "Temperature.MaxTemp": 70.0,
+    "type": "thermometer",
+    "pos": 446
+  },
+  "44": {
+    "name": "GRAUWASSER",
+    "capacity": 200.0,
+    "fluid_type": "blackwater",
+    "fluid": "wasteWater",
+    "ohm.empty": 1,
+    "ohm.5% capacity": 50,
+    "ohm.5%": 0,
+    "ohm.25%.capacity": 50.0,
+    "ohm.25%": 48,
+    "ohm.50%.capacity": 100.0,
+    "ohm.50%": 89,
+    "ohm.75%.capacity": 175.0,
+    "ohm.75%": 113,
+    "ohm.100%.capacity": 200.0,
+    "ohm.100%": 194,
+    "type": "tank",
+    "pos": 458
+  }
+}
