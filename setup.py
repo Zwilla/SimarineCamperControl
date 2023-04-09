@@ -8,6 +8,7 @@ setup(
     baseRepository="https://github.com/htool/pico2signalk",
     license='MIT',
     author="Htool Hans",
+    author_email="hans@defect.org",
     coauthor='Michael Padilla',
     coauthor_email='esmipa@zwilla.de',
     description='Simarine Data Reader'
