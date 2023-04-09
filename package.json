@@ -1,27 +1,32 @@
 {
-  "name": "pico2signalk",
-  "description": "Read Simarine Pico config and updates from the network",
-  "version": "0.0.10",
+  "name": "simarine.camper.control",
+  "description": "Read Simarine Camper Control config and updates from the network",
+  "version": "0.0.11",
   "private": false,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": [
     "signalk-node-server-plugin",
     "signalk-category-hardware",
     "marine",
-    "nautic"
+    "nautic",
+    "camper"
   ],
   "author": {
     "name": "Hans Tool",
     "email": "hans@defect.org"
   },
+  "coauthor": {
+    "name": "Michael Padilla",
+    "email": "esmipa@zwilla.de"
+  },
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/htool/pico2signalk.git"
+    "url": "git+https://github.com/Zwilla/SimarineCamperControl.git"
   },
   "bugs": {
-    "url": "https://github.com/htool/pico2signalk/issues"
+    "url": "https://github.com/Zwilla/SimarineCamperControl/issues"
   },
-  "homepage": "https://github.com/htool/pico2signalk#readme",
+  "homepage": "https://github.com/Zwilla/SimarineCamperControl#readme",
   "signalk-plugin-enabled-by-default": true
 }
