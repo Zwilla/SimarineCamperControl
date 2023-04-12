@@ -12,3 +12,9 @@ Afterwards, the UDP broadcast listening and update processing happens in NodeJS.
 ## Plugin options
 
 You can set the start instances of batteries, tanks etc here.
+
+
+## Start
+modify Ip-Address
+build
+run npm -install

@@ -1,18 +1,18 @@
-const id = "pico2signalk";
+const id = "picoCC";
 const { spawn } = require('node:child_process');
 
-var plugin = {}
+let plugin = {}
 
 module.exports = function(app, options) {
   "use strict"
-  var plugin = {}
+  let plugin = {}
   plugin.id = id
-  plugin.name = "Simarine Pico to SignalK"
-  plugin.description = "Read Simarine Pico config and updates from the network."
+  plugin.name = "Simarine Pico and Camper Control to SignalK"
+  plugin.description = "Read Simarine config_csl and updates from the network."
 
-  var unsubscribes = []
+  let unsubscribes = []
 
-  var schema = {
+  let schema = {
     properties: {
       batteryNr: {
         type: "number",
@@ -51,8 +51,8 @@ module.exports = function(app, options) {
   plugin.start = function(options, restartPlugin) {
     app.debug('Starting plugin');
 
-    var sensorList
-    var configRead = false
+    let sensorList
+    let configRead = false
     child = spawn('python3', ['pico.py'], { cwd: __dirname });
 
     child.stdout.on('data', function (data) {
@@ -62,13 +62,13 @@ module.exports = function(app, options) {
       configRead = true
     })
 
-    var udp = require('dgram')
-    var port = 43210
-    var socket = udp.createSocket('udp4')
-    var element
-    var sensorListTmp
-    var lastUpdate
-    var firstUpdate = true
+    let udp = require('dgram')
+    let port = 43210
+    let socket = udp.createSocket('udp4')
+    let element
+    let sensorListTmp
+    let lastUpdate
+    let firstUpdate = true
 
     socket.on('message', function (msg, info){
       if (Date.now() - lastUpdate < 1000) {
@@ -78,7 +78,7 @@ module.exports = function(app, options) {
       lastUpdate = Date.now()
       let message = msg.toString('hex')
       // app.debug(message)
-      if (configRead == true && message.length > 100 && message.length < 1000) {
+      if (configRead === true && message.length > 100 && message.length < 1000) {
         element = parseMessage(message)
         sensorListTmp = JSON.parse(JSON.stringify(sensorList))
         Object.keys(sensorList).forEach(item => {
@@ -118,7 +118,7 @@ module.exports = function(app, options) {
     });
 
     socket.on('listening', function(){
-      var address = socket.address();
+      let address = socket.address();
       app.debug("listening on :" + address.address + ":" + address.port);
     });
 
@@ -147,7 +147,7 @@ module.exports = function(app, options) {
 
     function readVolt (sensorId, elementId) {
       let volt = element[elementId][1]
-      if (volt != 65535) {
+      if (volt !== 65535) {
         sensorListTmp[sensorId]['voltage'] = volt / 1000
       }
     }
@@ -179,7 +179,7 @@ module.exports = function(app, options) {
       }
       sensorListTmp[sensorId]['current'] = current
       let timeRemaining
-      if (element[elementId][0] != 65535) {
+      if (element[elementId][0] !== 65535) {
         timeRemaining = Math.round(sensorList[sensorId]['capacity.nominal'] / 12 / ((current * stateOfCharge) + 0.001) )
       }
       if (timeRemaining < 0) {
@@ -193,12 +193,12 @@ module.exports = function(app, options) {
       if (temp > 32768) {
         temp = temp - 65536
       }
-      let temp2 = Number((temp / 10 + 273.15).toFixed(2))
-      return temp2
+      
+      return Number((temp / 10 + 273.15).toFixed(2))
     }
 
     function parseMessage (hexString) {
-      var result = {}
+      let result = {}
       hexString = hexString.substr(28)
       // app.debug("hexString: " + hexString)
       while (hexString.length > 4) { 
@@ -222,7 +222,6 @@ module.exports = function(app, options) {
           let field_data = [a, b]
           hexString = hexString.substr(14)
           return [field_nr, field_data, hexString]
-          break
         case 3:
           break
         case 4:
@@ -233,7 +232,7 @@ module.exports = function(app, options) {
 
 
     function pushDelta(values) {
-      var update = {
+      let update = {
         updates: [
           { 
             values: values
@@ -241,12 +240,12 @@ module.exports = function(app, options) {
         ]
       }
       app.debug('update: %j', update)
-      app.handleMessage(plugin.id, update)
-      return
+      app.handleEvent(plugin.id, update)
+
     }
 
     function sendMetas(metas) {
-      var update = {
+      let update = {
         updates: [
           { 
             meta: metas
@@ -254,19 +253,19 @@ module.exports = function(app, options) {
         ]
       }
       app.debug('update: %j', update)
-      app.handleMessage(plugin.id, update)
-      return
+      app.handleEvent(plugin.id, update)
+
     }
 
     function createUpdates (sensorList) {
-	    var batteryInstance = options.batteryNr || 1
-	    var currentInstance = options.currentNr || 1
-	    var ohmInstance = options.ohmNr || 1
-	    var voltInstance = options.voltNr || 0
-	    var tankInstance = options.tankNr || 1
+	    let batteryInstance = options.batteryNr || 1
+	    let currentInstance = options.currentNr || 1
+	    let ohmInstance = options.ohmNr || 1
+	    let voltInstance = options.voltNr || 0
+	    let tankInstance = options.tankNr || 1
 	    // for key, value in sensorList.items():
-      var updates = []
-      var metas = []
+      let updates = []
+      let metas = []
       for (const [key, value] of Object.entries(sensorList)) {
         // app.debug('key: %d  value: %j', key, value)
         switch (value['type']) {
