@@ -58,7 +58,7 @@ module.exports = function(app, options) {
     child.stdout.on('data', function (data) {
       let dataString = data.toString('utf-8')
       sensorList = JSON.parse(dataString)
-      app.debug('sensorList: %j', sensorList)
+      app.debug('global_sensorList: %j', sensorList)
       configRead = true
     })
 
@@ -82,7 +82,7 @@ module.exports = function(app, options) {
         element = parseMessage(message)
         sensorListTmp = JSON.parse(JSON.stringify(sensorList))
         Object.keys(sensorList).forEach(item => {
-	        // debug("sensorList[" + str(item) + "]: " + sensorList[item]["name"])
+	        // debug("global_sensorList[" + str(item_rv) + "]: " + global_sensorList[item_rv]["name"])
 	        let elId = sensorList[item]['pos']
 	        let type = sensorList[item]['type']
           switch (type) {
@@ -263,7 +263,7 @@ module.exports = function(app, options) {
 	    let ohmInstance = options.ohmNr || 1
 	    let voltInstance = options.voltNr || 0
 	    let tankInstance = options.tankNr || 1
-	    // for key, value in sensorList.items():
+	    // for key, value in global_sensorList.items():
       let updates = []
       let metas = []
       for (const [key, value] of Object.entries(sensorList)) {
