@@ -701,6 +701,14 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'temperature4': toTemperature(config_csl[entry][12][1])})
             sensorListSi[id_csl].update({'Temperature.MaxTemp': config_csl[entry][11][1] / 10})
 
+        if type_csl == 28:
+            type_csl = 'reserved 28'
+            elementSize = 0
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': '28 reserved'})
+
     return sensorListSi
 
 
@@ -944,16 +952,21 @@ def readBatt(sensorId, elementId, SensorName):
         elementgo = 3   # readBatt
 
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
-    sensorListTmp[sensorId].update({'stateOfCharge': stateOfCharge})
-    sensorListTmp[sensorId].update({'capacity.remaining': real_data_element[elementgo][1] * stateOfCharge})
-    sensorListTmp[sensorId].update({'voltage': real_data_element[elementgo + 2][1] / float(1000)})
+    voltage = real_data_element[elementgo + 2][1] / float(1000)
+    capacityRemaining = real_data_element[elementgo][1] * stateOfCharge
     current = real_data_element[elementgo + 1][1]
+
+    sensorListTmp[sensorId].update({'stateOfCharge': stateOfCharge})
+    sensorListTmp[sensorId].update({'capacity.remaining': capacityRemaining})
+    sensorListTmp[sensorId].update({'voltage': voltage})
+
     if current > 25000:
         current = (65535 - current) / float(100)
     else:
         current = current / float(100) * -1
-    sensorListTmp[sensorId].update({'current': current})
-    stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
+        sensorListTmp[sensorId].update({'current': current})
+        stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
+
     if real_data_element[elementgo][0] != 65535:
         timeRemaining = round(
             (global_sensorList[sensorId]['capacity.nominal']) / 12 / ((current * stateOfCharge) + 0.001))
