@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
+import copy
+import json
 import os
-import time
 import socket
 import sys
-from typing import Dict, Any
+import time
+from typing import Any
 
 import dictdiffer as dictdiffer
 import select
-import requests
-import json
+
 import brainsmoke
-import copy
 
 responses = [''] * 200
 sensors = ['']
@@ -32,8 +32,8 @@ def empty_socket_has_exit(sock, terminator):
         if len(inputready) == 0:
             break
 
-        for s in inputready:
-            s.recv(2048)
+        for sSi in inputready:
+            sSi.recv(2048)
 
     print("Regular exit:" + terminator)
 
@@ -96,11 +96,9 @@ def parse(message_p):
 
 def getNextField(response_gnf, position):
     field_nr = int(response_gnf[0:2], 16)
-    ftc = int(response_gnf[3:6])
     debug("field_type: " + response_gnf[3:6])
     field_type = int(response_gnf[3:5], 16)
     c = position
-    device = 'SC287981'
 
     # SOURCE 1
     # 01. position 01 - 30 = SC287981           (Type = 10) 2.nd data
@@ -149,12 +147,8 @@ def getNextField(response_gnf, position):
     # 39. position 44 - 56 = SC303.TEMP         (Type = 03) 2.nd data
     # 40. position 45 - 67 = GRAUWASSER         (Type = 08) 2.nd data
 
-    # SOURCE 2
-
     if field_type == 1:
         debug(response_gnf)
-        fta = response_gnf[6:11].replace(' ', '')
-        ftb = response_gnf[12:17].replace(' ', '')
         debug("field_type1 a: " + response_gnf[6:11].replace(' ', ''))
         debug("field_type1 b: " + response_gnf[12:17].replace(' ', ''))
         data = response_gnf[6:17]
@@ -204,11 +198,8 @@ def getNextField(response_gnf, position):
 
 
 def getNextFieldS2(response_gnf, position):
-    field_nr = position
     field_nrData = int(response_gnf[0:2], 16)
     debug(response_gnf)
-    fta = response_gnf[6:11].replace(' ', '')
-    ftb = response_gnf[12:17].replace(' ', '')
     debug("field_type1 a: " + response_gnf[6:11].replace(' ', ''))
     debug("field_type1 b: " + response_gnf[12:17].replace(' ', ''))
     data = response_gnf[6:17]
@@ -226,7 +217,6 @@ def parseResponse(response_pr, position):
     response_pr = response_pr[42:]
 
     while len(response_pr) > 6:
-        a = len(response_pr)
         position = position + 1
         field_nr, field_data, response_pr = getNextField(response_pr, position)
         # debug(str(field_nr) + " " + field_data)
@@ -245,7 +235,6 @@ def parseResponseS2(response_pr, position):
     response_pr = response_pr[42:]
 
     while len(response_pr) > 6:
-        a = len(response_pr)
         position = position + 1
         field_nr, field_data, response_pr = getNextFieldS2(response_pr, position)
         # debug(str(field_nr) + " " + field_data)
@@ -270,7 +259,6 @@ def send_receive(messageSi):
     debug(("Sending : " + messageSi + " (" + str(bytesSi) + " bytesSi)"))
     messageSi = bytearray.fromhex(messageSi)
     response_sr = ''
-    hexSi = ''
 
     try:
         s.sendall(messageSi)
@@ -307,23 +295,22 @@ def open_tcp(picoIp_ot):
 def get_pico_config(pico_ip_get):
     config_SimarineSystem = {}
     open_tcp(pico_ip_get)
-    response_list = []
     messageSi = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
     messageSi = add_crc(messageSi)
 
-    req_count = int(0 + 1)
     # Response: 00 00 00 00 00 ff 02 04 8c 55 4b 00 11 ff 01 01 00 00 00 1e ff 02 01 00 00 00 30 ff 32 cf
     try:
         response_gpc = send_receive(messageSi)
         req_count = int(response_gpc.split()[19], 16) + 1
         debug("req_count: " + str(req_count))
-        for pos in range(req_count):
+        for devicePos in range(req_count):
             messageSi = (
-                    '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 ' + "%02x" % pos + ' ff 01 03 00 00 00 00 ff 00 00 00 00 ff')
+                    '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 ' + "%02x" % devicePos +
+                    ' ff 01 03 00 00 00 00 ff 00 00 00 00 ff')
             messageSi = add_crc(messageSi)
             response_gpc = send_receive(messageSi)
-            device_Simarine = parseResponse(response_gpc, pos)
-            config_SimarineSystem[pos] = device_Simarine
+            device_Simarine = parseResponse(response_gpc, devicePos)
+            config_SimarineSystem[devicePos] = device_Simarine
 
     except KeyError:
         sys.stdout.flush()
@@ -384,23 +371,24 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
             sensorListSi[id_csl].update({'name': config_csl[entry][10]})
-            sensorListSi[id_csl].update({'name2': config_csl[entry][15]})
+            sensorListSi[id_csl].update({'WiFi Ap SSID': config_csl[entry][10]})
+            sensorListSi[id_csl].update({'AP Password': config_csl[entry][15]})
             sensorListSi[id_csl].update({'val 3.0': config_csl[entry][3][0]})
             sensorListSi[id_csl].update({'val 3.1': config_csl[entry][3][1]})
             sensorListSi[id_csl].update({'val 11.0': config_csl[entry][11][0]})
             sensorListSi[id_csl].update({'val 11.1': config_csl[entry][11][1]})
-            sensorListSi[id_csl].update({'Port': config_csl[entry][12][1]})
+            sensorListSi[id_csl].update({'TCP Port': config_csl[entry][12][1]})
             sensorListSi[id_csl].update({'val 13.0': config_csl[entry][13][0]})
             sensorListSi[id_csl].update({'val 13.1': config_csl[entry][13][1]})
             sensorListSi[id_csl].update({'val 14.0': config_csl[entry][14][0]})
-            sensorListSi[id_csl].update({'client port': config_csl[entry][14][1]})
+            sensorListSi[id_csl].update({'udp port': config_csl[entry][14][1]})
             sensorListSi[id_csl].update({'val 29.0': config_csl[entry][29][0]})
             sensorListSi[id_csl].update({'val 29.1': config_csl[entry][29][1]})
 
         if type_csl == 7:
-            type_csl = 'Battery Loader'
+            type_csl = 'Battery Charger'
 
-            elementSize = 0
+            elementSize = 1
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
@@ -721,6 +709,7 @@ client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 client.bind(("", 43210))
 
 # Assign pico address
+picoIp = "192.168.8.146"
 try:
     message, addr = client.recvfrom(2048)
     picoIp = addr[0]
@@ -729,7 +718,6 @@ except KeyboardInterrupt:
 finally:
     debug("See Pico at f KeyboardInterrupt")
 
-# picoIp = "192.168.8.146"
 debug("See Pico/CC at " + str(picoIp))
 
 global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp)
@@ -748,71 +736,84 @@ responseC = []
 old_element = {}
 
 
-def setElementgo(elementId):
+def setElementgo(elementId, SensorName):
+    print("SensorName:" + SensorName)
     elementgo = 0
-    if elementId == 8:
-        elementgo = 19  # readVolt
-    if elementId == 3:
-        elementgo = 5  # readVolt
-    if elementId == 9:
-        elementgo = 20  # readVolt
-    if elementId == 10:
-        elementgo = 21  # readVolt
-    if elementId == 27:
-        elementgo = 28  # readCurrent
-    if elementId == 4:
-        elementgo = 11  # readCurrent= sensorId
-    if elementId == 5:
-        elementgo = 12  # readCurrent= sensorId
-    if elementId == 6:
-        elementgo = 13  # readCurrent= sensorId
-    if elementId == 7:
-        elementgo = 14  # readCurrent= sensorId
-    if elementId == 13:
-        elementgo = 15  # readCurrent= sensorId
-    if elementId == 14:
-        elementgo = 16  # readCurrent= sensorId
-    if elementId == 2:
+    if elementId == 1:
+        elementgo = 0  # readChargerPower
+
+    if elementId == 3:  # Barometer
         elementgo = 3  # = readBaro
-    if elementId == 21:
+
+    if elementId == 4:  # Pico Internal
+        elementgo = 5  # readVolt
+    if elementId == 9:  # SPU62 1
+        elementgo = 19  # readVolt
+    if elementId == 10:  # SPU62 2 13.359
+        elementgo = 20  # readVolt
+    if elementId == 11:  # SPU62 3
+        elementgo = 21  # readVolt
+    if elementId == 12:  # SPU62 4
+        elementgo = 22  # readVolt
+    if elementId == 29:  # SC303 5450 1
+        elementgo = 40  # readVolt
+    if elementId == 30:  # SC303 5450 2
+        elementgo = 41  # readVolt
+
+    if elementId == 5:  # SPU62 1
+        elementgo = 11  # readCurrent= sensorId
+    if elementId == 6:  # SPU62 2
+        elementgo = 12  # readCurrent= sensorId
+    if elementId == 7:  # SPU62 3
+        elementgo = 13  # readCurrent= sensorId
+    if elementId == 8:  # SPU62 4
+        elementgo = 14  # readCurrent= sensorId
+    if elementId == 28:  # SC303 5450
+        elementgo = 29  # readCurrent
+
+    if elementId == 22:  # BAT1.TEMP
         elementgo = 44   # readTemp 15.2
-    if elementId == 22:
-        elementgo = 45   # readTemp 15.2
-    if elementId == 23:
-        elementgo = 46   # readTemp 19.6
-    if elementId == 24:
-        elementgo = 47   # readTemp 17.6
-    if elementId == 26:
-        elementgo = 44   # readTemp 15.2
-    if elementId == 46:
-        elementgo = 47   # readTemp 15.2
-    if elementId == 44:
-        elementgo = 46   # readTemp 19.6
-    if elementId == 33:
-        elementgo = 65   # readTemp 18.6
-    if elementId == 34:
+    if elementId == 23:  # BAT2.TEMP
+        elementgo = 45   # readTemp 19.6
+    if elementId == 24:  # STARTERBAT.TEMP
+        elementgo = 46   # readTemp 17.6
+    if elementId == 25:  # HEIZUNG OUT
+        elementgo = 47   # readTemp 16.6
+    if elementId == 34:  # SC303.TEMP
+        elementgo = 65   # readTemp 17.6
+
+    if elementId == 20:  # Frischwasser
         elementgo = 34  # readTank
-    if elementId == 29:
+    if elementId == 35:  # GRAUWASSER
         elementgo = 35  # readTank
+
     if elementId == 12:
         elementgo = 23  # readOhm
-    if elementId == 13:
+    if elementId == 13:  # SPU62 1
+        elementgo = 23  # readOhm
+    if elementId == 14:  # SPU62 2
         elementgo = 24  # readOhm
-    if elementId == 14:
+    if elementId == 15:  # SPU62 3
         elementgo = 25  # readOhm
-    if elementId == 15:
+    if elementId == 16:  # SPU62 4
         elementgo = 26  # readOhm
-    if elementId == 30:
+    if elementId == 31:  # SC303 5450 1
         elementgo = 62  # readOhm
-    if elementId == 31:
+    if elementId == 32:  # SC303 5450 2
         elementgo = 63  # readOhm
-    if elementId == 32:
+    if elementId == 33:  # SC303 5450 3
         elementgo = 64  # readOhm
-    if elementId == 1:
-        elementgo = 22  # readSolarPower
-    if elementId == 20:
+
+    if elementId == 2:
+        elementgo = 1  # readSolarPower
+
+    if elementId == 19:  # Battery 1
         elementgo = 18  # readBatt
-    if elementId == 25:
+    if elementId == 21:  # Starterbat
+        elementgo = 20  # readBatt
+    if elementId == 26:  # BATPICO
+        elementgo = 3   # readBatt
+    if elementId == 27:  # STARTEREINGANG
         elementgo = 3   # readBatt
 
     return elementgo
@@ -820,36 +821,14 @@ def setElementgo(elementId):
 
 def readVolt(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 19
-    if elementId == 8:
-        elementgo = 19  # readVolt
-    if elementId == 3:
-        elementgo = 5  # readVolt
-    if elementId == 9:
-        elementgo = 20  # readVolt
-    if elementId == 10:
-        elementgo = 21  # readVolt
+    elementgo = setElementgo(elementId, SensorName)
     voltage = real_data_element[elementgo][1] / float(1000)
     sensorListTmp[sensorId].update({'voltage': voltage})
 
 
 def readCurrent(sensorId, elementId, SensorName):
-    elementgo = 28
-    if elementId == 27:
-        elementgo = 28  # readCurrent
-    if elementId == 4:
-        elementgo = 11  # readCurrent= sensorId
-    if elementId == 5:
-        elementgo = 12  # readCurrent= sensorId
-    if elementId == 6:
-        elementgo = 13  # readCurrent= sensorId
-    if elementId == 7:
-        elementgo = 14  # readCurrent= sensorId
-    if elementId == 13:
-        elementgo = 15  # readCurrent= sensorId
-    if elementId == 14:
-        elementgo = 16  # readCurrent= sensorId
     print("SensorName:" + SensorName)
+    elementgo = setElementgo(elementId, SensorName)
     current = real_data_element[elementgo][1]
     if current > 25000:
         current = (65535 - current) / float(100)
@@ -860,49 +839,21 @@ def readCurrent(sensorId, elementId, SensorName):
 
 def readBaro(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 3
-    if elementId == 2:
-        elementgo = 3  # = readBaro
+    elementgo = setElementgo(elementId, SensorName)
     pressure = float((real_data_element[elementgo][1] + 65536) / 100)
     sensorListTmp[sensorId].update({'pressure': pressure})
 
 
 def readTemp(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 1
-    if elementId == 21:
-        elementgo = 44   # readTemp 15.2
-    if elementId == 22:
-        elementgo = 45   # readTemp 15.2
-    if elementId == 23:
-        elementgo = 46   # readTemp 19.6
-    if elementId == 24:
-        elementgo = 47   # readTemp 17.6
-    if elementId == 26:
-        elementgo = 44   # readTemp 15.2
-    if elementId == 46:
-        elementgo = 47   # readTemp 15.2
-    if elementId == 44:
-        elementgo = 46   # readTemp 19.6
-    if elementId == 33:
-        elementgo = 65   # readTemp 18.6
-
-    print("elementId:" + str(elementgo))
-    calibration = sensorListTmp[sensorId]['Temperature.Calibration']
-    tempval2calc = real_data_element[elementgo][1]
-    # temperature = toTemperature(tempval2calc) - calibration
+    elementgo = setElementgo(elementId, SensorName)
     temperature = float(real_data_element[elementgo][1] / 10)
     sensorListTmp[sensorId].update({'temperature': temperature})
 
 
 def readTank(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    # is 32 and 33
-    elementgo = 35
-    if elementId == 34:
-        elementgo = 34  # readTank
-    if elementId == 29:
-        elementgo = 35  # readTank
+    elementgo = setElementgo(elementId, SensorName)
     currentLevel = real_data_element[elementgo][0] / float(10)
     currentVolume = real_data_element[elementgo][1] / float(10)
     sensorListTmp[sensorId].update({'currentLevel': currentLevel})
@@ -911,46 +862,30 @@ def readTank(sensorId, elementId, SensorName):
 
 def readOhm(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 1
-    if elementId == 12:
-        elementgo = 23  # readOhm
-    if elementId == 13:
-        elementgo = 24  # readOhm
-    if elementId == 14:
-        elementgo = 25  # readOhm
-    if elementId == 15:
-        elementgo = 26  # readOhm
-    if elementId == 30:
-        elementgo = 62  # readOhm
-    if elementId == 31:
-        elementgo = 63  # readOhm
-    if elementId == 32:
-        elementgo = 64  # readOhm
+    elementgo = setElementgo(elementId, SensorName)
     ohm = real_data_element[elementgo][1]
     sensorListTmp[sensorId].update({'ohm': ohm})
 
 
 def readSolarPower(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 22
-    if elementId == 1:
-        elementgo = 22  # readSolarPower
+    elementgo = setElementgo(elementId, SensorName)
+    currentAmp = real_data_element[elementgo][0] / float(1000)
+    currentVolt = real_data_element[elementgo][1] / float(10000)
+    sensorListTmp[sensorId].update({'currentAmp': currentAmp})
+    sensorListTmp[sensorId].update({'currentVolt': currentVolt})
 
+
+def readChargerPower(sensorId, elementId, SensorName):
+    print("SensorName:" + SensorName)
+    elementgo = setElementgo(elementId, SensorName)
     sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
     sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
 
 
-# above ok for my individual setup
-
-
 def readBatt(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    elementgo = 18
-    if elementId == 20:
-        elementgo = 18  # readBatt
-    if elementId == 25:
-        elementgo = 3   # readBatt
-
+    elementgo = setElementgo(elementId, SensorName)
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
     voltage = real_data_element[elementgo + 2][1] / float(1000)
     capacityRemaining = real_data_element[elementgo][1] * stateOfCharge
@@ -1027,6 +962,8 @@ while True:
 
         if itemType == 'SolarPower':
             readSolarPower(deviceSensor, sensorLiveData, itemName)
+        if itemType == 'Charger':
+            readChargerPower(deviceSensor, sensorLiveData, itemName)
         if itemType == 'barometer':
             readBaro(deviceSensor, sensorLiveData, itemName)
         if itemType == 'current':
