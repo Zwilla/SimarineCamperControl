@@ -740,17 +740,87 @@ responseC = []
 old_element = {}
 
 
+def setElementgo(elementId):
+    elementgo = 0
+    if elementId == 8:
+        elementgo = 19  # readVolt
+    if elementId == 3:
+        elementgo = 5  # readVolt
+    if elementId == 9:
+        elementgo = 20  # readVolt
+    if elementId == 10:
+        elementgo = 21  # readVolt
+    if elementId == 27:
+        elementgo = 28  # readCurrent
+    if elementId == 4:
+        elementgo = 11  # readCurrent= sensorId
+    if elementId == 5:
+        elementgo = 12  # readCurrent= sensorId
+    if elementId == 6:
+        elementgo = 13  # readCurrent= sensorId
+    if elementId == 7:
+        elementgo = 14  # readCurrent= sensorId
+    if elementId == 13:
+        elementgo = 15  # readCurrent= sensorId
+    if elementId == 14:
+        elementgo = 16  # readCurrent= sensorId
+    if elementId == 2:
+        elementgo = 3  # = readBaro
+    if elementId == 21:
+        elementgo = 44   # readTemp 15.2
+    if elementId == 22:
+        elementgo = 45   # readTemp 15.2
+    if elementId == 23:
+        elementgo = 46   # readTemp 19.6
+    if elementId == 24:
+        elementgo = 47   # readTemp 17.6
+    if elementId == 26:
+        elementgo = 44   # readTemp 15.2
+    if elementId == 46:
+        elementgo = 47   # readTemp 15.2
+    if elementId == 44:
+        elementgo = 46   # readTemp 19.6
+    if elementId == 33:
+        elementgo = 65   # readTemp 18.6
+    if elementId == 34:
+        elementgo = 34  # readTank
+    if elementId == 29:
+        elementgo = 35  # readTank
+    if elementId == 12:
+        elementgo = 23  # readOhm
+    if elementId == 13:
+        elementgo = 24  # readOhm
+    if elementId == 14:
+        elementgo = 25  # readOhm
+    if elementId == 15:
+        elementgo = 26  # readOhm
+    if elementId == 30:
+        elementgo = 62  # readOhm
+    if elementId == 31:
+        elementgo = 63  # readOhm
+    if elementId == 32:
+        elementgo = 64  # readOhm
+    if elementId == 1:
+        elementgo = 22  # readSolarPower
+    if elementId == 20:
+        elementgo = 18  # readBatt
+    if elementId == 25:
+        elementgo = 3   # readBatt
+
+    return elementgo
+
+
 def readVolt(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 19
     if elementId == 8:
-        elementgo = 19
+        elementgo = 19  # readVolt
     if elementId == 3:
-        elementgo = 5
+        elementgo = 5  # readVolt
     if elementId == 9:
-        elementgo = 20
+        elementgo = 20  # readVolt
     if elementId == 10:
-        elementgo = 21
+        elementgo = 21  # readVolt
     voltage = real_data_element[elementgo][1] / float(1000)
     sensorListTmp[sensorId].update({'voltage': voltage})
 
@@ -758,19 +828,19 @@ def readVolt(sensorId, elementId, SensorName):
 def readCurrent(sensorId, elementId, SensorName):
     elementgo = 28
     if elementId == 27:
-        elementgo = 28
+        elementgo = 28  # readCurrent
     if elementId == 4:
-        elementgo = 11  # = sensorId
+        elementgo = 11  # readCurrent= sensorId
     if elementId == 5:
-        elementgo = 12  # = sensorId
+        elementgo = 12  # readCurrent= sensorId
     if elementId == 6:
-        elementgo = 13  # = sensorId
+        elementgo = 13  # readCurrent= sensorId
     if elementId == 7:
-        elementgo = 14  # = sensorId
+        elementgo = 14  # readCurrent= sensorId
     if elementId == 13:
-        elementgo = 15  # = sensorId
+        elementgo = 15  # readCurrent= sensorId
     if elementId == 14:
-        elementgo = 16  # = sensorId
+        elementgo = 16  # readCurrent= sensorId
     print("SensorName:" + SensorName)
     current = real_data_element[elementgo][1]
     if current > 25000:
@@ -784,29 +854,30 @@ def readBaro(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 3
     if elementId == 2:
-        elementgo = 3  # = sensorId
+        elementgo = 3  # = readBaro
     pressure = float((real_data_element[elementgo][1] + 65536) / 100)
     sensorListTmp[sensorId].update({'pressure': pressure})
+
 
 def readTemp(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 1
     if elementId == 21:
-        elementgo = 44   # 15.2
+        elementgo = 44   # readTemp 15.2
     if elementId == 22:
-        elementgo = 45   # 15.2
+        elementgo = 45   # readTemp 15.2
     if elementId == 23:
-        elementgo = 46   # 19.6
+        elementgo = 46   # readTemp 19.6
     if elementId == 24:
-        elementgo = 47   # 17.6
+        elementgo = 47   # readTemp 17.6
     if elementId == 26:
-        elementgo = 44   # 15.2
+        elementgo = 44   # readTemp 15.2
     if elementId == 46:
-        elementgo = 47   # 15.2
+        elementgo = 47   # readTemp 15.2
     if elementId == 44:
-        elementgo = 46   # 19.6
+        elementgo = 46   # readTemp 19.6
     if elementId == 33:
-        elementgo = 65   # 18.6
+        elementgo = 65   # readTemp 18.6
 
     print("elementId:" + str(elementgo))
     calibration = sensorListTmp[sensorId]['Temperature.Calibration']
@@ -821,9 +892,9 @@ def readTank(sensorId, elementId, SensorName):
     # is 32 and 33
     elementgo = 35
     if elementId == 34:
-        elementgo = 34
+        elementgo = 34  # readTank
     if elementId == 29:
-        elementgo = 35
+        elementgo = 35  # readTank
     currentLevel = real_data_element[elementgo][0] / float(10)
     currentVolume = real_data_element[elementgo][1] / float(10)
     sensorListTmp[sensorId].update({'currentLevel': currentLevel})
@@ -834,27 +905,28 @@ def readOhm(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 1
     if elementId == 12:
-        elementgo = 23
+        elementgo = 23  # readOhm
     if elementId == 13:
-        elementgo = 24
+        elementgo = 24  # readOhm
     if elementId == 14:
-        elementgo = 25
+        elementgo = 25  # readOhm
     if elementId == 15:
-        elementgo = 26
+        elementgo = 26  # readOhm
     if elementId == 30:
-        elementgo = 62
+        elementgo = 62  # readOhm
     if elementId == 31:
-        elementgo = 63
+        elementgo = 63  # readOhm
     if elementId == 32:
-        elementgo = 64
+        elementgo = 64  # readOhm
     ohm = real_data_element[elementgo][1]
     sensorListTmp[sensorId].update({'ohm': ohm})
+
 
 def readSolarPower(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 22
     if elementId == 1:
-        elementgo = 22
+        elementgo = 22  # readSolarPower
 
     sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
     sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
@@ -867,9 +939,9 @@ def readBatt(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     elementgo = 18
     if elementId == 20:
-        elementgo = 18
+        elementgo = 18  # readBatt
     if elementId == 25:
-        elementgo = 3
+        elementgo = 3   # readBatt
 
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
     sensorListTmp[sensorId].update({'stateOfCharge': stateOfCharge})
