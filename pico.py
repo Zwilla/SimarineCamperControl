@@ -376,6 +376,57 @@ def createSensorList(config_csl):
         elementSize = 1
         sensorListSi[id_csl] = {}
 
+        if type_csl == 10:
+            type_csl = '10 System'
+
+            elementSize = 0
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': config_csl[entry][10]})
+            sensorListSi[id_csl].update({'name2': config_csl[entry][15]})
+            sensorListSi[id_csl].update({'val 3.0': config_csl[entry][3][0]})
+            sensorListSi[id_csl].update({'val 3.1': config_csl[entry][3][1]})
+            sensorListSi[id_csl].update({'val 11.0': config_csl[entry][11][0]})
+            sensorListSi[id_csl].update({'val 11.1': config_csl[entry][11][1]})
+            sensorListSi[id_csl].update({'Port': config_csl[entry][12][1]})
+            sensorListSi[id_csl].update({'val 13.0': config_csl[entry][13][0]})
+            sensorListSi[id_csl].update({'val 13.1': config_csl[entry][13][1]})
+            sensorListSi[id_csl].update({'val 14.0': config_csl[entry][14][0]})
+            sensorListSi[id_csl].update({'client port': config_csl[entry][14][1]})
+            sensorListSi[id_csl].update({'val 29.0': config_csl[entry][29][0]})
+            sensorListSi[id_csl].update({'val 29.1': config_csl[entry][29][1]})
+
+        if type_csl == 7:
+            type_csl = 'Battery Loader'
+
+            elementSize = 0
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': config_csl[entry][3][0]})
+            sensorListSi[id_csl].update({'val 2': config_csl[entry][3][1]})
+            sensorListSi[id_csl].update({'val 7200': config_csl[entry][4][1]})
+            sensorListSi[id_csl].update({'val 5': config_csl[entry][3][0]})
+            sensorListSi[id_csl].update({'val 3': config_csl[entry][7][0]})
+            sensorListSi[id_csl].update({'val 4': config_csl[entry][7][1]})
+
+        if type_csl == 4:
+            type_csl = 'SolarPower'
+            elementSize = 1
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+
+            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
+            sensorListSi[id_csl].update({'val.4.0': config_csl[entry][4][0]})
+            sensorListSi[id_csl].update({'val.4.1': config_csl[entry][4][1]})
+            sensorListSi[id_csl].update({'Amp Input': config_csl[entry][8][1]})
+            if config_csl[entry][8][1] == 255:
+                sensorListSi[id_csl].update({'Amp Input': 'no Input'})
+            sensorListSi[id_csl].update({'val.9.0': config_csl[entry][9][0]})
+            sensorListSi[id_csl].update({'val.9.1': config_csl[entry][9][1]})
+
         if type_csl == 0:
             type_csl = 'reserved 0.0'
             elementSize = 0
@@ -384,10 +435,23 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'name': 'reserved'})
             sensorListSi[id_csl].update({'type_csl': type_csl})
 
+        if type_csl == 5:
+            type_csl = 'barometer'
+            elementSize = 1
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
+            sensorListSi[id_csl].update({'high.min': config_csl[entry][4][0]})
+            sensorListSi[id_csl].update({'high.max': config_csl[entry][4][1]})
+            sensorListSi[id_csl].update({'high over zero': config_csl[entry][5][1]})
+            sensorListSi[id_csl].update({'low.min': config_csl[entry][9][0]})
+            sensorListSi[id_csl].update({'low.max': config_csl[entry][9][1]})
+
         if type_csl == 1:
             type_csl = 'volt'
             if config_csl[entry][3] == 'PICO INTERNAL':
-                elementSize = 7
+                elementSize = 1
             if 'SPU52' in str(config_csl[entry][3]):
                 elementSize = 1
             if 'SPU62' in str(config_csl[entry][3]):
@@ -408,7 +472,6 @@ def createSensorList(config_csl):
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-
             sensorListSi[id_csl].update({'name': config_csl[entry][3]})
             sensorListSi[id_csl].update({'is 10351 18046': config_csl[entry][4][0]})
             sensorListSi[id_csl].update({'is 32314 224': config_csl[entry][4][1]})
@@ -421,6 +484,25 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'volt 1506 1547 28066': config_csl[entry][7][0]})
             sensorListSi[id_csl].update({'volt 60868 47887 25761': config_csl[entry][7][1]})
             sensorListSi[id_csl].update({'volt': config_csl[entry][7][1]})
+
+        if type_csl == 22:
+            type_csl = '22 SCC8 CamperControl'
+
+            elementSize = 0
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
+            sensorListSi[id_csl].update({'val a': config_csl[entry][4][0]})
+            sensorListSi[id_csl].update({'val b': config_csl[entry][4][1]})
+            sensorListSi[id_csl].update({'Switch.1.on.off': config_csl[entry][5][0]})
+            sensorListSi[id_csl].update({'Switch.2.on.off': config_csl[entry][6][0]})
+            sensorListSi[id_csl].update({'Switch.3.on.off': config_csl[entry][7][0]})
+            sensorListSi[id_csl].update({'Switch.4.on.off': config_csl[entry][8][0]})
+            sensorListSi[id_csl].update({'Switch.5.on.off': config_csl[entry][9][0]})
+            sensorListSi[id_csl].update({'Switch.6.on.off': config_csl[entry][10][0]})
+            sensorListSi[id_csl].update({'Switch.7.on.off': config_csl[entry][11][0]})
+            sensorListSi[id_csl].update({'Switch.Main.on.off': config_csl[entry][12][0]})
 
         if type_csl == 2:
             type_csl = 'current'
@@ -444,7 +526,6 @@ def createSensorList(config_csl):
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-
             sensorListSi[id_csl].update({'name': config_csl[entry][3]})
             sensorListSi[id_csl].update({'current': 'calc'})
             sensorListSi[id_csl].update({'set a': config_csl[entry][4][0]})
@@ -453,70 +534,6 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'connected to device': config_csl[entry][10][1]})
             if config_csl[entry][10][1] == 255:
                 sensorListSi[id_csl].update({'connected to device': 'not connected'})
-
-        if type_csl == 3:
-            type_csl = 'thermometer'
-            if 'SPU52' in str(config_csl[entry][3]):
-                elementSize = 1
-            if 'SPU62' in str(config_csl[entry][3]):
-                elementSize = 1
-            if 'SC303' in str(config_csl[entry][3]):
-                elementSize = 1
-            if 'SC503' in str(config_csl[entry][3]):
-                elementSize = 1  # NTC 1
-            if 'SC301' in str(config_csl[entry][3]):
-                elementSize = 1  # NTC 1
-            if 'SCQ25' in str(config_csl[entry][3]):
-                elementSize = 1
-            if 'SCQ25T' in str(config_csl[entry][3]):
-                elementSize = 1
-            if 'SCQ50' in str(config_csl[entry][3]):
-                elementSize = 1
-
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-
-            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-            sensorListSi[id_csl].update({'ntc_type': '' + ntc_type[config_csl[entry][6][1]]})
-            sensorListSi[id_csl].update({'Temperature.Calibration': config_csl[entry][7][1] / 100})
-            sensorListSi[id_csl].update({'Temperature.Priority': toTemperaturePriority(config_csl[entry][9][1])})
-            sensorListSi[id_csl].update({'temperature': 'calc'})
-            sensorListSi[id_csl].update({'temperature2': toTemperature(config_csl[entry][10][1])})
-            sensorListSi[id_csl].update({'temperature3': toTemperature(config_csl[entry][12][0])})
-            sensorListSi[id_csl].update({'temperature4': toTemperature(config_csl[entry][12][1])})
-            sensorListSi[id_csl].update({'Temperature.MaxTemp': config_csl[entry][11][1] / 10})
-
-        if type_csl == 4:
-            type_csl = 'SolarPower'
-            elementSize = 1
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-
-            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-            sensorListSi[id_csl].update({'val.4.0': config_csl[entry][4][0]})
-            sensorListSi[id_csl].update({'val.4.1': config_csl[entry][4][1]})
-            sensorListSi[id_csl].update({'Amp Input': config_csl[entry][8][1]})
-            if config_csl[entry][8][1] == 255:
-                sensorListSi[id_csl].update({'Amp Input': 'no Input'})
-            sensorListSi[id_csl].update({'val.9.0': config_csl[entry][9][0]})
-            sensorListSi[id_csl].update({'val.9.1': config_csl[entry][9][1]})
-
-        if type_csl == 5:
-            type_csl = 'barometer'
-
-            elementSize = 1
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-
-            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-            sensorListSi[id_csl].update({'high.min': config_csl[entry][4][0]})
-            sensorListSi[id_csl].update({'high.max': config_csl[entry][4][1]})
-            sensorListSi[id_csl].update({'high over zero': config_csl[entry][5][1]})
-            sensorListSi[id_csl].update({'low.min': config_csl[entry][9][0]})
-            sensorListSi[id_csl].update({'low.max': config_csl[entry][9][1]})
 
         if type_csl == 6:
             type_csl = 'ohm'
@@ -540,27 +557,80 @@ def createSensorList(config_csl):
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-
             sensorListSi[id_csl].update({'name': config_csl[entry][3]})
             sensorListSi[id_csl].update({'is 18046': config_csl[entry][4][0]})
             sensorListSi[id_csl].update({'is 224': config_csl[entry][4][1]})
             sensorListSi[id_csl].update({'val.8.0': config_csl[entry][8][0]})
             sensorListSi[id_csl].update({'ohm': config_csl[entry][8][1]})
 
-        if type_csl == 7:
-            type_csl = 'Battery Loader'
+        if type_csl == 25:
+            type_csl = '25 reserved'
+            elementSize = 0
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': 'unused'})
+
+        if type_csl == 23:
+            type_csl = '23 SPU'
 
             elementSize = 0
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
+            sensorListSi[id_csl].update({'val.4.0': config_csl[entry][4][0]})
+            sensorListSi[id_csl].update({'val.4.1': config_csl[entry][4][1]})
 
-            sensorListSi[id_csl].update({'name': config_csl[entry][3][0]})
-            sensorListSi[id_csl].update({'val 2': config_csl[entry][3][1]})
-            sensorListSi[id_csl].update({'val 7200': config_csl[entry][4][1]})
-            sensorListSi[id_csl].update({'val 5': config_csl[entry][3][0]})
-            sensorListSi[id_csl].update({'val 3': config_csl[entry][7][0]})
-            sensorListSi[id_csl].update({'val 4': config_csl[entry][7][1]})
+        if type_csl == 13:
+            type_csl = '13 Nick Roll'
+
+            elementSize = 1
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+            sensorListSi[id_csl].update({'name': 'Nick Roll'})
+
+            if config_csl[entry][7][1] == 1:
+                sensorListSi[id_csl].update({'Ino Type': 'Boat'})
+            if config_csl[entry][7][1] == 2:
+                sensorListSi[id_csl].update({'Ino Type': 'Caravan'})
+
+            sensorListSi[id_csl].update({'Calibration min 0': config_csl[entry][8][0]})
+            sensorListSi[id_csl].update({'Calibration max 2500': config_csl[entry][8][1]})
+            sensorListSi[id_csl].update({'val a': config_csl[entry][11][0]})
+            sensorListSi[id_csl].update({'val b': config_csl[entry][11][1]})
+
+        if type_csl == 9:
+            type_csl = 'battery'
+            elementSize = 1
+            elementPos = elementPos + elementSize
+            sensorListSi[id_csl].update({'pos': elementPos})
+            sensorListSi[id_csl].update({'type_csl': type_csl})
+
+            try:
+                sensorListSi[id_csl].update({'name': config_csl[entry][3]})
+                sensorListSi[id_csl].update({'capacity.nominal': config_csl[entry][5][1] * 36 * 12})  # In Joule
+                sensorListSi[id_csl].update({'capacity.C20.Joule': 'calc'})
+                sensorListSi[id_csl].update({'capacity.C20.Ah': 'calc'})
+                sensorListSi[id_csl].update({'capacity.C10.Joule': 'calc'})
+                sensorListSi[id_csl].update({'capacity.C10.Ah': 'calc'})
+                sensorListSi[id_csl].update({'capacity.C05.Joule': 'calc'})
+                sensorListSi[id_csl].update({'capacity.C05.Ah': 'calc'})
+                sensorListSi[id_csl].update({'battery_type': battery_type[config_csl[entry][8][1]]})
+                sensorListSi[id_csl].update({'TempSensor is': config_csl[entry][10][1]})
+                sensorListSi[id_csl].update({'stateOfCharge': 'calc'})
+                sensorListSi[id_csl].update({'capacity.remaining': 'calc'})
+                sensorListSi[id_csl].update({'capacity.timeRemaining': 'calc'})
+                sensorListSi[id_csl].update({'TTG.avg': config_csl[entry][13][1]})
+                sensorListSi[id_csl].update({'TTG.SOC': (config_csl[entry][14][1] / 10)})
+                sensorListSi[id_csl].update({'CEF': (config_csl[entry][15][1] / 10)})
+                sensorListSi[id_csl].update({'is.charging': config_csl[entry][16][1]})
+
+            except KeyError:
+                print("Something went wrong - battery")
+            finally:
+                debug("The 'try except' is finished - battery" + str(config_csl[entry][3]))
 
         if type_csl == 8:
             type_csl = 'tank'
@@ -598,117 +668,38 @@ def createSensorList(config_csl):
             finally:
                 debug("The 'try except' is finished - tank")
 
-        if type_csl == 9:
-            type_csl = 'battery'
+        if type_csl == 3:
+            type_csl = 'thermometer'
+            if 'SPU52' in str(config_csl[entry][3]):
+                elementSize = 1
+            if 'SPU62' in str(config_csl[entry][3]):
+                elementSize = 1
+            if 'SC303' in str(config_csl[entry][3]):
+                elementSize = 1
+            if 'SC503' in str(config_csl[entry][3]):
+                elementSize = 1  # NTC 1
+            if 'SC301' in str(config_csl[entry][3]):
+                elementSize = 1  # NTC 1
+            if 'SCQ25' in str(config_csl[entry][3]):
+                elementSize = 1
+            if 'SCQ25T' in str(config_csl[entry][3]):
+                elementSize = 1
+            if 'SCQ50' in str(config_csl[entry][3]):
+                elementSize = 1
 
-            elementSize = 1
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-
-            try:
-                sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-                sensorListSi[id_csl].update({'capacity.nominal': config_csl[entry][5][1] * 36 * 12})  # In Joule
-                sensorListSi[id_csl].update({'capacity.C20.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C20.Ah': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C10.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C10.Ah': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C05.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C05.Ah': 'calc'})
-                sensorListSi[id_csl].update({'battery_type': battery_type[config_csl[entry][8][1]]})
-                sensorListSi[id_csl].update({'TempSensor is': config_csl[entry][10][1]})
-                sensorListSi[id_csl].update({'stateOfCharge': 'calc'})
-                sensorListSi[id_csl].update({'capacity.remaining': 'calc'})
-                sensorListSi[id_csl].update({'capacity.timeRemaining': 'calc'})
-                sensorListSi[id_csl].update({'TTG.avg': config_csl[entry][13][1]})
-                sensorListSi[id_csl].update({'TTG.SOC': (config_csl[entry][14][1] / 10)})
-                sensorListSi[id_csl].update({'CEF': (config_csl[entry][15][1] / 10)})
-                sensorListSi[id_csl].update({'is.charging': config_csl[entry][16][1]})
-
-            except KeyError:
-                print("Something went wrong - battery")
-            finally:
-                debug("The 'try except' is finished - battery" + str(config_csl[entry][3]))
-
-        if type_csl == 10:
-            type_csl = '10 System'
-
-            elementSize = 0
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-
-            sensorListSi[id_csl].update({'name': config_csl[entry][10]})
-            sensorListSi[id_csl].update({'name2': config_csl[entry][15]})
-            sensorListSi[id_csl].update({'val 3.0': config_csl[entry][3][0]})
-            sensorListSi[id_csl].update({'val 3.1': config_csl[entry][3][1]})
-            sensorListSi[id_csl].update({'val 11.0': config_csl[entry][11][0]})
-            sensorListSi[id_csl].update({'val 11.1': config_csl[entry][11][1]})
-            sensorListSi[id_csl].update({'Port': config_csl[entry][12][1]})
-            sensorListSi[id_csl].update({'val 13.0': config_csl[entry][13][0]})
-            sensorListSi[id_csl].update({'val 13.1': config_csl[entry][13][1]})
-            sensorListSi[id_csl].update({'val 14.0': config_csl[entry][14][0]})
-            sensorListSi[id_csl].update({'client port': config_csl[entry][14][1]})
-            sensorListSi[id_csl].update({'val 29.0': config_csl[entry][29][0]})
-            sensorListSi[id_csl].update({'val 29.1': config_csl[entry][29][1]})
-
-        if type_csl == 13:
-            type_csl = '13 Nick Roll'
-
-            elementSize = 1
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': 'Nick Roll'})
-
-            if config_csl[entry][7][1] == 1:
-                sensorListSi[id_csl].update({'Ino Type': 'Boat'})
-            if config_csl[entry][7][1] == 2:
-                sensorListSi[id_csl].update({'Ino Type': 'Caravan'})
-
-            sensorListSi[id_csl].update({'Calibration min 0': config_csl[entry][8][0]})
-            sensorListSi[id_csl].update({'Calibration max 2500': config_csl[entry][8][1]})
-            sensorListSi[id_csl].update({'val a': config_csl[entry][11][0]})
-            sensorListSi[id_csl].update({'val b': config_csl[entry][11][1]})
-
-        if type_csl == 22:
-            type_csl = '22 SCC8 CamperControl'
-
-            elementSize = 0
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
 
             sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-            sensorListSi[id_csl].update({'val a': config_csl[entry][4][0]})
-            sensorListSi[id_csl].update({'val b': config_csl[entry][4][1]})
-            sensorListSi[id_csl].update({'Switch.1.on.off': config_csl[entry][5][0]})
-            sensorListSi[id_csl].update({'Switch.2.on.off': config_csl[entry][6][0]})
-            sensorListSi[id_csl].update({'Switch.3.on.off': config_csl[entry][7][0]})
-            sensorListSi[id_csl].update({'Switch.4.on.off': config_csl[entry][8][0]})
-            sensorListSi[id_csl].update({'Switch.5.on.off': config_csl[entry][9][0]})
-            sensorListSi[id_csl].update({'Switch.6.on.off': config_csl[entry][10][0]})
-            sensorListSi[id_csl].update({'Switch.7.on.off': config_csl[entry][11][0]})
-            sensorListSi[id_csl].update({'Switch.Main.on.off': config_csl[entry][12][0]})
-
-        if type_csl == 23:
-            type_csl = '23 SPU'
-
-            elementSize = 0
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-            sensorListSi[id_csl].update({'val.4.0': config_csl[entry][4][0]})
-            sensorListSi[id_csl].update({'val.4.1': config_csl[entry][4][1]})
-
-        if type_csl == 25:
-            type_csl = '25 reserved'
-            elementSize = 0
-            elementPos = elementPos + elementSize
-            sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': 'unused'})
+            sensorListSi[id_csl].update({'ntc_type': '' + ntc_type[config_csl[entry][6][1]]})
+            sensorListSi[id_csl].update({'Temperature.Calibration': config_csl[entry][7][1] / 100})
+            sensorListSi[id_csl].update({'Temperature.Priority': toTemperaturePriority(config_csl[entry][9][1])})
+            sensorListSi[id_csl].update({'temperature': 'calc'})
+            sensorListSi[id_csl].update({'temperature2': toTemperature(config_csl[entry][10][1])})
+            sensorListSi[id_csl].update({'temperature3': toTemperature(config_csl[entry][12][0])})
+            sensorListSi[id_csl].update({'temperature4': toTemperature(config_csl[entry][12][1])})
+            sensorListSi[id_csl].update({'Temperature.MaxTemp': config_csl[entry][11][1] / 10})
 
     return sensorListSi
 
@@ -749,69 +740,154 @@ responseC = []
 old_element = {}
 
 
+def readVolt(sensorId, elementId, SensorName):
+    print("SensorName:" + SensorName)
+    elementgo = 19
+    if elementId == 8:
+        elementgo = 19
+    if elementId == 3:
+        elementgo = 5
+    if elementId == 9:
+        elementgo = 20
+    if elementId == 10:
+        elementgo = 21
+    voltage = real_data_element[elementgo][1] / float(1000)
+    sensorListTmp[sensorId].update({'voltage': voltage})
+
+
+def readCurrent(sensorId, elementId, SensorName):
+    elementgo = 28
+    if elementId == 27:
+        elementgo = 28
+    if elementId == 4:
+        elementgo = 11  # = sensorId
+    if elementId == 5:
+        elementgo = 12  # = sensorId
+    if elementId == 6:
+        elementgo = 13  # = sensorId
+    if elementId == 7:
+        elementgo = 14  # = sensorId
+    if elementId == 13:
+        elementgo = 15  # = sensorId
+    if elementId == 14:
+        elementgo = 16  # = sensorId
+    print("SensorName:" + SensorName)
+    current = real_data_element[elementgo][1]
+    if current > 25000:
+        current = (65535 - current) / float(100)
+    else:
+        current = current / float(100) * -1
+    sensorListTmp[sensorId].update({'current': current})
+
+
 def readBaro(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    sensorListTmp[sensorId].update({'pressure': real_data_element[elementId][1] + 65536})
-
+    elementgo = 3
+    if elementId == 2:
+        elementgo = 3  # = sensorId
+    pressure = float((real_data_element[elementgo][1] + 65536) / 100)
+    sensorListTmp[sensorId].update({'pressure': pressure})
 
 def readTemp(sensorId, elementId, SensorName):
-    sensorListTmp[sensorId].update({'temperature': toTemperature(real_data_element[elementId][1] -
-                                                                 sensorListTmp[sensorId]['Temperature.Calibration'])})
+    print("SensorName:" + SensorName)
+    elementgo = 1
+    if elementId == 21:
+        elementgo = 44   # 15.2
+    if elementId == 22:
+        elementgo = 45   # 15.2
+    if elementId == 23:
+        elementgo = 46   # 19.6
+    if elementId == 24:
+        elementgo = 47   # 17.6
+    if elementId == 26:
+        elementgo = 44   # 15.2
+    if elementId == 46:
+        elementgo = 47   # 15.2
+    if elementId == 44:
+        elementgo = 46   # 19.6
+    if elementId == 33:
+        elementgo = 65   # 18.6
+
+    print("elementId:" + str(elementgo))
+    calibration = sensorListTmp[sensorId]['Temperature.Calibration']
+    tempval2calc = real_data_element[elementgo][1]
+    # temperature = toTemperature(tempval2calc) - calibration
+    temperature = float(real_data_element[elementgo][1] / 10)
+    sensorListTmp[sensorId].update({'temperature': temperature})
 
 
 def readTank(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
     # is 32 and 33
-    sensorListTmp[sensorId].update({'currentLevel': real_data_element[elementId][0] / float(1000)})
-    sensorListTmp[sensorId].update({'currentVolume': real_data_element[elementId][1] / float(10000)})
+    elementgo = 35
+    if elementId == 34:
+        elementgo = 34
+    if elementId == 29:
+        elementgo = 35
+    currentLevel = real_data_element[elementgo][0] / float(10)
+    currentVolume = real_data_element[elementgo][1] / float(10)
+    sensorListTmp[sensorId].update({'currentLevel': currentLevel})
+    sensorListTmp[sensorId].update({'currentVolume': currentVolume})
 
+
+def readOhm(sensorId, elementId, SensorName):
+    print("SensorName:" + SensorName)
+    elementgo = 1
+    if elementId == 12:
+        elementgo = 23
+    if elementId == 13:
+        elementgo = 24
+    if elementId == 14:
+        elementgo = 25
+    if elementId == 15:
+        elementgo = 26
+    if elementId == 30:
+        elementgo = 62
+    if elementId == 31:
+        elementgo = 63
+    if elementId == 32:
+        elementgo = 64
+    ohm = real_data_element[elementgo][1]
+    sensorListTmp[sensorId].update({'ohm': ohm})
 
 def readSolarPower(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementId][0] / float(1000)})
-    sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementId][1] / float(10000)})
+    elementgo = 22
+    if elementId == 1:
+        elementgo = 22
+
+    sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
+    sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
+
+
+# above ok for my individual setup
 
 
 def readBatt(sensorId, elementId, SensorName):
     print("SensorName:" + SensorName)
-    stateOfCharge = float("%.2f" % (real_data_element[elementId][0] / 16000.0))
+    elementgo = 18
+    if elementId == 20:
+        elementgo = 18
+    if elementId == 25:
+        elementgo = 3
+
+    stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
     sensorListTmp[sensorId].update({'stateOfCharge': stateOfCharge})
-    sensorListTmp[sensorId].update({'capacity.remaining': real_data_element[elementId][1] * stateOfCharge})
-    sensorListTmp[sensorId].update({'voltage': real_data_element[elementId + 2][1] / float(1000)})
-    current = real_data_element[elementId + 1][1]
+    sensorListTmp[sensorId].update({'capacity.remaining': real_data_element[elementgo][1] * stateOfCharge})
+    sensorListTmp[sensorId].update({'voltage': real_data_element[elementgo + 2][1] / float(1000)})
+    current = real_data_element[elementgo + 1][1]
     if current > 25000:
         current = (65535 - current) / float(100)
     else:
         current = current / float(100) * -1
     sensorListTmp[sensorId].update({'current': current})
-    stateOfCharge = float("%.2f" % (real_data_element[elementId][0] / 16000.0))
-    if real_data_element[elementId][0] != 65535:
+    stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
+    if real_data_element[elementgo][0] != 65535:
         timeRemaining = round(
             (global_sensorList[sensorId]['capacity.nominal']) / 12 / ((current * stateOfCharge) + 0.001))
         if timeRemaining < 0:
             timeRemaining = 60 * 60 * 24 * 7  # One week
         sensorListTmp[sensorId].update({'capacity.timeRemaining': timeRemaining})
-
-
-def readVolt(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
-    if real_data_element[elementId][2] == elementId:
-        sensorListTmp[sensorId].update({'voltage': real_data_element[elementId][1] / float(1000)})
-
-
-def readOhm(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
-    sensorListTmp[sensorId].update({'ohm': real_data_element[elementId][1]})
-
-
-def readCurrent(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
-    current = real_data_element[elementId][1]
-    if current > 25000:
-        current = (65535 - current) / float(100)
-    else:
-        current = current / float(100) * -1
-    sensorListTmp[sensorId].update({'current': current})
 
 
 while True:
