@@ -861,13 +861,14 @@ def setElementgo(elementId, SensorName):
         elementgo = 1  # readSolarPower
 
     if elementId == 19:  # Battery 1
-        elementgo = 18  # readBatt
+        elementgo = 18  # readBatt is 18 & 19
     if elementId == 21:  # Starterbat
-        elementgo = 20  # readBatt
+        elementgo = 20  # readBatt is 20 & 21
     if elementId == 26:  # BATPICO
-        elementgo = 3  # readBatt
+        elementgo = 3  # readBatt is 3 & 4
     if elementId == 27:  # STARTEREINGANG
-        elementgo = 3  # readBatt
+        elementgo = 3  # readBatt is 3 & 4
+
     if elementId == 17 or elementId >= 36:
         print('catch elementId' + str(elementId))
 
