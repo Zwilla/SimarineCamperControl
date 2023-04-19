@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import copy
+import io
 import json
 import os
 import socket
 import sys
 import time as time
+from json import JSONDecodeError
 from typing import Any
+
 import dictdiffer as dictdiffer
 import select
 
@@ -276,7 +279,7 @@ def send_receive(messageSi, s, client):
             hexSi = format(x, '02x')
             response_sr = response_sr + hexSi + ' '
             debug('Response: ' + response_sr)
-    except BlockingIOError:
+    except (BlockingIOError, ConnectionAbortedError):
         sys.stdout.flush()
         time.sleep(0.9)
         empty_socket_has_exit(client, 'send_receive')
@@ -296,7 +299,7 @@ def open_tcp(picoIp_ot, s):
         return
 
     except (BrokenPipeError, OSError):
-        print("Connection to " + str(picoIp_ot) + "at Port: " + str(serverport) + " failed. Retrying in 7 sec.")
+        print("Connection to " + str(picoIp_ot) + " at Port: " + str(serverport) + " failed. Retrying in 7 sec.")
         time.sleep(7)
         # try again
         return open_tcp(picoIp_ot, s)
@@ -364,6 +367,7 @@ def createSensorList(config_csl):
     battery_type = ['dummy', 'wet low maintenance', 'wet maintenance free', 'AGM', 'Deep Cycle', 'Gel', 'LiFePo4']
     ntc_type = ['dummy', '10k', '5k']
     elementPos = 0
+    switchOnOff = 0
 
     for entry in config_csl.keys():
         debug(config_csl[entry])
@@ -428,11 +432,12 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'val.9.1': config_csl[entry][9][1]})
 
         if type_csl == 0:
-            type_csl = 'reserved 0.0'
+            switchOnOff = switchOnOff + 1
+            type_csl = 'Bank 0.0'
             elementSize = 0
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
-            sensorListSi[id_csl].update({'name': 'reserved'})
+            sensorListSi[id_csl].update({'name': 'Switch_A_' + str(switchOnOff)})
             sensorListSi[id_csl].update({'type_csl': type_csl})
 
         if type_csl == 5:
@@ -564,12 +569,13 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'ohm': config_csl[entry][8][1]})
 
         if type_csl == 25:
-            type_csl = '25 reserved'
+            type_csl = 'Bank 0.1'
             elementSize = 0
+            switchOnOff = switchOnOff + 1
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': 'unused'})
+            sensorListSi[id_csl].update({'name': 'Switch_B_' + str(switchOnOff)})
 
         if type_csl == 23:
             type_csl = '23 SPU'
@@ -702,12 +708,13 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'Temperature.MaxTemp': config_csl[entry][11][1] / 10})
 
         if type_csl == 28:
-            type_csl = 'reserved 28'
+            type_csl = 'Bank 0.2'
             elementSize = 0
+            switchOnOff = switchOnOff + 1
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': '28 reserved'})
+            sensorListSi[id_csl].update({'name': 'Switch_C_' + str(switchOnOff)})
 
     return sensorListSi
 
@@ -871,6 +878,14 @@ def setElementgo(elementId, SensorName):
 
     if elementId == 17 or elementId >= 36:
         print('catch elementId' + str(elementId))
+    if elementId == 36:  # SC301 [6264]
+        elementgo = 67  # readAmp
+    if elementId == 37:  # SC301 [6264] 1
+        elementgo = 67  # readVolt
+    if elementId == 38:  # SC301 [6264] 2
+        elementgo = 67  # readVolt
+    if elementId == 39:  # SC301 [6264]
+        elementgo = 67  # readOhm
 
     return elementgo
 
@@ -975,7 +990,7 @@ def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, 
         sensorListTmp[sensorId].update({'capacity.timeRemaining': timeRemaining})
 
 
-def infiniteMakeList(global_sensorList, client, old_element):
+def infiniteMakeList(global_sensorList, client, old_element, loggerID):
     while True:
         updates = []
         sensorListTmp: dict[Any, dict[Any, Any]] = copy.deepcopy(global_sensorList)
@@ -1015,6 +1030,7 @@ def infiniteMakeList(global_sensorList, client, old_element):
         debug(real_data_element)
         for diff in list(dictdiffer.diff(old_element, real_data_element)):
             print("The Diff: " + str(diff))
+        old_element = {}
         old_element = copy.deepcopy(real_data_element)
 
         # Add values to global_sensorList copy
@@ -1024,8 +1040,6 @@ def infiniteMakeList(global_sensorList, client, old_element):
             itemType = global_sensorList[deviceSensor]['type_csl']
             itemName = global_sensorList[deviceSensor]['name']
 
-            # print('global_sensorList[' + str(deviceSensor) + '] pos[' + str(sensorLiveData) + '] name:[' + str(
-            #    itemName) + ']' + 'itemType:[' + str(itemType) + ']')
             try:
                 if itemType == 'SolarPower':
                     readSolarPower(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
@@ -1038,7 +1052,8 @@ def infiniteMakeList(global_sensorList, client, old_element):
                 if itemType == 'ohm':
                     readOhm(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
                 if itemType == 'battery':
-                    readBatt(deviceSensor, sensorLiveData, itemName, global_sensorList, sensorListTmp, real_data_element)
+                    readBatt(deviceSensor, sensorLiveData, itemName, global_sensorList, sensorListTmp,
+                             real_data_element)
                 if itemType == 'tank':
                     readTank(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
                 if itemType == 'thermometer':
@@ -1052,14 +1067,20 @@ def infiniteMakeList(global_sensorList, client, old_element):
                 sys.stdout.flush()
                 empty_socket(client)
                 time.sleep(5)
-                prepare_connection(2)
+                prepare_connection(2, loggerID)
 
-        print(json.dumps(sensorListTmp))
+        with open("SimarineLogger.json", "a") as outfile:
+            print('{ "A' + str(loggerID) + '": [' + json.dumps(global_sensorList) + ' ]}')
+            json_data = json.loads('{ "B' + str(loggerID) + '": [' + json.dumps(global_sensorList) + ']}')
+            json.dump(json_data, outfile)
+            outfile.write(',\n')
+            outfile.close()
+        loggerID = loggerID + 1
         sys.stdout.flush()
         empty_socket(client)
 
 
-def prepare_connection(i):
+def prepare_connection(i, loggerID):
     global_sensorList = {}
     responseB = [''] * 50
     responseC = []
@@ -1085,8 +1106,25 @@ def prepare_connection(i):
                     debug("CONFIG:" + str(global_config))
                     global_sensorList = createSensorList(global_config)
                     debug("SensorList:" + str(global_sensorList))
-                    print(json.dumps(global_sensorList))
-                    infiniteMakeList(global_sensorList, client, old_element)
+                    try:
+                        with open("SimarineLogger.json", "a") as inJSONFile:
+                            comma = inJSONFile.seek(-1, os.SEEK_END)
+                            inJSONFile.truncate()
+                            json_data = json.load(inJSONFile)
+                            # print(len(json_data[0]))
+                            # item_dict = json.loads(inJSONFile)
+                            # print(len(item_dict[0]))
+                            inJSONFile.seek(0)
+                    except (JSONDecodeError, io.UnsupportedOperation, OSError):
+                        debug('no file found, or empty/corrupt file')
+
+                    with open("SimarineLogger.json", "a") as outfile:
+                        print('{ "A' + str(loggerID) + '": [' + json.dumps(global_sensorList) + ' ]}')
+                        json_data = json.loads('{ "A' + str(loggerID) + '": [' + json.dumps(global_sensorList) + ' ]}')
+                        json.dump(json_data, outfile)
+                        outfile.write(',\n')
+
+                    infiniteMakeList(global_sensorList, client, old_element, loggerID=loggerID + 1)
                     print("Try: " + str(i) + " - too many retries, something went wrong")
                     exit(0)
 
@@ -1101,7 +1139,7 @@ def prepare_connection(i):
                 empty_socket(client)
                 print("Try: " + str(i) + " - Refresh in 6 sec.")
                 time.sleep(6)
-                prepare_connection(i)
+                prepare_connection(i, loggerID)
                 # global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, s, client)
             break
     except KeyboardInterrupt:
@@ -1112,4 +1150,10 @@ def prepare_connection(i):
     return i
 
 
-prepare_connection(1)
+def main():
+    loggerID = 0
+    prepare_connection(1, loggerID)
+
+
+if __name__ == "__main__":
+    main()
