@@ -1,7 +1,31 @@
 const id = "picoCC";
 const { spawn } = require('node:child_process');
-
+const WebSocket = require("ws");
 let plugin = {}
+const wss = new WebSocket.Server({
+    port: 8080
+});
+
+wss.on("connection", function connection(ws) {
+    console.log("Client connected to websocket");
+});
+
+const py = spawn("python", ["pico.py"]);
+
+py.stdout.on("data", (data) => {
+
+    // broadcast the new binary image to all clients
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+        }
+    });
+
+});
+
+py.stderr.on("data", (data) => {
+    console.error(data.toString());
+});
 
 module.exports = function(app, options) {
   "use strict"
@@ -56,7 +80,7 @@ module.exports = function(app, options) {
     child = spawn('python3', ['pico.py'], { cwd: __dirname });
 
     child.stdout.on('data', function (data) {
-      let dataString = data.toString('utf-8')
+      let dataString = data.toString()
       sensorList = JSON.parse(dataString)
       app.debug('global_sensorList: %j', sensorList)
       configRead = true

@@ -15,6 +15,6 @@ You can set the start instances of batteries, tanks etc here.
 
 
 ## Start
-modify Ip-Address
+python.exe -m pip install --upgrade pip
 build
 run npm -install

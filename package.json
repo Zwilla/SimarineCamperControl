@@ -28,5 +28,9 @@
     "url": "https://github.com/Zwilla/SimarineCamperControl/issues"
   },
   "homepage": "https://github.com/Zwilla/SimarineCamperControl#readme",
-  "signalk-plugin-enabled-by-default": true
+  "signalk-plugin-enabled-by-default": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.13.0"
+  }
 }

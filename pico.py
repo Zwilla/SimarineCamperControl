@@ -5,9 +5,8 @@ import json
 import os
 import socket
 import sys
-import time
+import time as time
 from typing import Any
-
 import dictdiffer as dictdiffer
 import select
 
@@ -24,6 +23,18 @@ def debug(string):
             sys.stdout.flush()
 
 
+def empty_socket(sock):
+    """remove the data present on the socket"""
+    inputSi = [sock]
+    while 1:
+        inputready, o, e = select.select(inputSi, [], [], 0.0)
+        if len(inputready) == 0:
+            break
+
+        for sSi in inputready:
+            sSi.recv(2048)
+
+
 def empty_socket_has_exit(sock, terminator):
     """remove the data present on the socket"""
     inputSi = [sock]
@@ -36,7 +47,6 @@ def empty_socket_has_exit(sock, terminator):
             sSi.recv(2048)
 
     print("Regular exit:" + terminator)
-
     exit(0)
 
 
@@ -190,7 +200,7 @@ def getNextField(response_gnf, position):
             response_gnf = response_gnf[3:]
             nextHex = response_gnf[0:2]
         word = HexToByte(word)
-        print("field_type4 Word: " + word)
+        # print("field_type4 Word: " + word)
         response_gnf = response_gnf[6:]  # Strip seperator
         return field_nr, word, response_gnf
 
@@ -220,8 +230,8 @@ def parseResponse(response_pr, position):
         position = position + 1
         field_nr, field_data, response_pr = getNextField(response_pr, position)
         # debug(str(field_nr) + " " + field_data)
-        print('field_nr:' + str(field_nr))
-        print(' data:' + str(field_data))
+        # print('field_nr:' + str(field_nr))
+        # print(' data:' + str(field_data))
         debug(response_pr + " " + str(len(response_pr)))
         debug(str(field_data))
         dictSi[field_nr] = field_data
@@ -238,8 +248,8 @@ def parseResponseS2(response_pr, position):
         position = position + 1
         field_nr, field_data, response_pr = getNextFieldS2(response_pr, position)
         # debug(str(field_nr) + " " + field_data)
-        print('field_nr:' + str(field_nr))
-        print(' data:' + str(field_data))
+        # print('field_nr:' + str(field_nr))
+        # print(' data:' + str(field_data))
         debug(response_pr + " " + str(len(response_pr)))
         debug(str(field_data))
         dictSi[field_nr] = field_data
@@ -254,7 +264,7 @@ def add_crc(messageSi):
     return messageSi + " " + hexdump(crc_int)
 
 
-def send_receive(messageSi):
+def send_receive(messageSi, s, client):
     bytesSi = messageSi.count(' ') + 1
     debug(("Sending : " + messageSi + " (" + str(bytesSi) + " bytesSi)"))
     messageSi = bytearray.fromhex(messageSi)
@@ -276,31 +286,33 @@ def send_receive(messageSi):
     return response_sr
 
 
-def open_tcp(picoIp_ot):
+def open_tcp(picoIp_ot, s):
+    # Create a TCP stream socket with address family of IPv4 (INET)
+    serverport = 5001
+
     try:
-        # Create a TCP stream socket with address family of IPv4 (INET)
-        serverport = 5001
         # Connect to the server at given IP and port
         s.connect((picoIp_ot, serverport))
         return
-    except BrokenPipeError:
-        debug("Connection to " + str(picoIp_ot) + ":5001 failed. Retrying in 1 sec.")
-        time.sleep(5)
+
+    except (BrokenPipeError, OSError):
+        print("Connection to " + str(picoIp_ot) + "at Port: " + str(serverport) + " failed. Retrying in 7 sec.")
+        time.sleep(7)
         # try again
-        return open_tcp(picoIp_ot)
+        return open_tcp(picoIp_ot, s)
+
     finally:
         debug("The show must go on")
 
 
-def get_pico_config(pico_ip_get):
+def get_pico_config(pico_ip_get, s, client):
     config_SimarineSystem = {}
-    open_tcp(pico_ip_get)
+    open_tcp(pico_ip_get, s)
     messageSi = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
     messageSi = add_crc(messageSi)
-
     # Response: 00 00 00 00 00 ff 02 04 8c 55 4b 00 11 ff 01 01 00 00 00 1e ff 02 01 00 00 00 30 ff 32 cf
     try:
-        response_gpc = send_receive(messageSi)
+        response_gpc = send_receive(messageSi, s, client)
         req_count = int(response_gpc.split()[19], 16) + 1
         debug("req_count: " + str(req_count))
         for devicePos in range(req_count):
@@ -308,14 +320,14 @@ def get_pico_config(pico_ip_get):
                     '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 ' + "%02x" % devicePos +
                     ' ff 01 03 00 00 00 00 ff 00 00 00 00 ff')
             messageSi = add_crc(messageSi)
-            response_gpc = send_receive(messageSi)
+            response_gpc = send_receive(messageSi, s, client)
             device_Simarine = parseResponse(response_gpc, devicePos)
             config_SimarineSystem[devicePos] = device_Simarine
 
     except KeyError:
         sys.stdout.flush()
         time.sleep(0.9)
-        empty_socket_has_exit(client, 'get_pico_config')
+        empty_socket(client)
     finally:
         # Close tcp connection
         s.close()
@@ -700,44 +712,85 @@ def createSensorList(config_csl):
     return sensorListSi
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-debug("Start TCP listener")
-# Setup UDP broadcasting listener
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-client.bind(("", 43210))
+def setElementgosort(elementId, SensorName):
+    # print("SensorName:" + SensorName)
+    elementgo = 0
+    if elementId == 1:
+        elementgo = 0  # readChargerPower
+    if elementId == 2:
+        elementgo = 1  # readSolarPower
+    if elementId == 3:  # Barometer
+        elementgo = 3  # = readBaro
+    if elementId == 4:  # Pico Internal
+        elementgo = 5  # readVolt
+    if elementId == 5:  # SPU62 1
+        elementgo = 11  # readCurrent= sensorId
+    if elementId == 6:  # SPU62 2
+        elementgo = 12  # readCurrent= sensorId
+    if elementId == 7:  # SPU62 3
+        elementgo = 13  # readCurrent= sensorId
+    if elementId == 8:  # SPU62 4
+        elementgo = 14  # readCurrent= sensorId
+    if elementId == 9:  # SPU62 1
+        elementgo = 19  # readVolt
+    if elementId == 10:  # SPU62 2 13.359
+        elementgo = 20  # readVolt
+    if elementId == 11:  # SPU62 3
+        elementgo = 21  # readVolt
+    if elementId == 12:  # SPU62 4
+        elementgo = 22  # readVolt
+    if elementId == 13:  # SPU62 1
+        elementgo = 23  # readOhm
+    if elementId == 14:  # SPU62 2
+        elementgo = 24  # readOhm
+    if elementId == 15:  # SPU62 3
+        elementgo = 25  # readOhm
+    if elementId == 16:  # SPU62 4
+        elementgo = 26  # readOhm
 
-# Assign pico address
-picoIp = "192.168.8.146"
-try:
-    message, addr = client.recvfrom(2048)
-    picoIp = addr[0]
-except KeyboardInterrupt:
-    debug("See Pico at KeyboardInterrupt")
-finally:
-    debug("See Pico at f KeyboardInterrupt")
+    if elementId == 19:  # Battery 1
+        elementgo = 18  # readBatt
+    if elementId == 20:  # Frischwasser
+        elementgo = 34  # readTank
+    if elementId == 21:  # Starterbat
+        elementgo = 20  # readBatt
+    if elementId == 22:  # BAT1.TEMP
+        elementgo = 44  # readTemp 15.2
+    if elementId == 23:  # BAT2.TEMP
+        elementgo = 45  # readTemp 19.6
+    if elementId == 24:  # STARTERBAT.TEMP
+        elementgo = 46  # readTemp 17.6
+    if elementId == 25:  # HEIZUNG OUT
+        elementgo = 47  # readTemp 16.6
+    if elementId == 26:  # BATPICO
+        elementgo = 3  # readBatt
+    if elementId == 27:  # STARTEREINGANG
+        elementgo = 3  # readBatt
+    if elementId == 28:  # SC303 5450
+        elementgo = 29  # readCurrent
+    if elementId == 29:  # SC303 5450 1
+        elementgo = 40  # readVolt
+    if elementId == 30:  # SC303 5450 2
+        elementgo = 41  # readVolt
+    if elementId == 31:  # SC303 5450 1
+        elementgo = 62  # readOhm
+    if elementId == 32:  # SC303 5450 2
+        elementgo = 63  # readOhm
+    if elementId == 33:  # SC303 5450 3
+        elementgo = 64  # readOhm
+    if elementId == 34:  # SC303.TEMP
+        elementgo = 65  # readTemp 17.6
+    if elementId == 35:  # GRAUWASSER
+        elementgo = 35  # readTank
 
-debug("See Pico/CC at " + str(picoIp))
+    if elementId == 17 or elementId >= 36:
+        print('catch elementId' + str(elementId))
 
-global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp)
-debug("CONFIG:")
-debug(global_config)
-
-# global_sensorList = {}
-global_sensorList = createSensorList(global_config)
-debug("SensorList:")
-debug(global_sensorList)
-print(json.dumps(global_sensorList))
-
-responseB = [''] * 50
-responseC = []
-
-old_element = {}
+    return elementgo
 
 
 def setElementgo(elementId, SensorName):
-    print("SensorName:" + SensorName)
+    # print("SensorName:" + SensorName)
     elementgo = 0
     if elementId == 1:
         elementgo = 0  # readChargerPower
@@ -772,15 +825,15 @@ def setElementgo(elementId, SensorName):
         elementgo = 29  # readCurrent
 
     if elementId == 22:  # BAT1.TEMP
-        elementgo = 44   # readTemp 15.2
+        elementgo = 44  # readTemp 15.2
     if elementId == 23:  # BAT2.TEMP
-        elementgo = 45   # readTemp 19.6
+        elementgo = 45  # readTemp 19.6
     if elementId == 24:  # STARTERBAT.TEMP
-        elementgo = 46   # readTemp 17.6
+        elementgo = 46  # readTemp 17.6
     if elementId == 25:  # HEIZUNG OUT
-        elementgo = 47   # readTemp 16.6
+        elementgo = 47  # readTemp 16.6
     if elementId == 34:  # SC303.TEMP
-        elementgo = 65   # readTemp 17.6
+        elementgo = 65  # readTemp 17.6
 
     if elementId == 20:  # Frischwasser
         elementgo = 34  # readTank
@@ -812,22 +865,24 @@ def setElementgo(elementId, SensorName):
     if elementId == 21:  # Starterbat
         elementgo = 20  # readBatt
     if elementId == 26:  # BATPICO
-        elementgo = 3   # readBatt
+        elementgo = 3  # readBatt
     if elementId == 27:  # STARTEREINGANG
-        elementgo = 3   # readBatt
+        elementgo = 3  # readBatt
+    if elementId == 17 or elementId >= 36:
+        print('catch elementId' + str(elementId))
 
     return elementgo
 
 
-def readVolt(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readVolt(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     voltage = real_data_element[elementgo][1] / float(1000)
     sensorListTmp[sensorId].update({'voltage': voltage})
 
 
-def readCurrent(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readCurrent(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     current = real_data_element[elementgo][1]
     if current > 25000:
@@ -837,22 +892,22 @@ def readCurrent(sensorId, elementId, SensorName):
     sensorListTmp[sensorId].update({'current': current})
 
 
-def readBaro(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readBaro(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     pressure = float((real_data_element[elementgo][1] + 65536) / 100)
     sensorListTmp[sensorId].update({'pressure': pressure})
 
 
-def readTemp(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readTemp(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     temperature = float(real_data_element[elementgo][1] / 10)
     sensorListTmp[sensorId].update({'temperature': temperature})
 
 
-def readTank(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readTank(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     currentLevel = real_data_element[elementgo][0] / float(10)
     currentVolume = real_data_element[elementgo][1] / float(10)
@@ -860,15 +915,15 @@ def readTank(sensorId, elementId, SensorName):
     sensorListTmp[sensorId].update({'currentVolume': currentVolume})
 
 
-def readOhm(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readOhm(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     ohm = real_data_element[elementgo][1]
     sensorListTmp[sensorId].update({'ohm': ohm})
 
 
-def readSolarPower(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readSolarPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     currentAmp = real_data_element[elementgo][0] / float(1000)
     currentVolt = real_data_element[elementgo][1] / float(10000)
@@ -876,15 +931,15 @@ def readSolarPower(sensorId, elementId, SensorName):
     sensorListTmp[sensorId].update({'currentVolt': currentVolt})
 
 
-def readChargerPower(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readChargerPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
     sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
 
 
-def readBatt(sensorId, elementId, SensorName):
-    print("SensorName:" + SensorName)
+def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
     elementgo = setElementgo(elementId, SensorName)
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
     voltage = real_data_element[elementgo + 2][1] / float(1000)
@@ -910,77 +965,139 @@ def readBatt(sensorId, elementId, SensorName):
         sensorListTmp[sensorId].update({'capacity.timeRemaining': timeRemaining})
 
 
-while True:
-    updates = []
-    sensorListTmp: dict[Any, dict[Any, Any]] = copy.deepcopy(global_sensorList)
-    pos = 0
-    message = ''
+def infiniteMakeList(global_sensorList, client, old_element):
     while True:
-        pos = pos + 1
+        updates = []
+        sensorListTmp: dict[Any, dict[Any, Any]] = copy.deepcopy(global_sensorList)
+        pos = 0
+        message = ''
+        while True:
+            time.sleep(5)
+            pos = pos + 1
+            message, addr = client.recvfrom(2048)
+            debug("Received packet with length " + str(len(message)))
+            if 100 < len(message) < 2048:
+                break
+
+        global_response = BinToHex(message)
+
+        debug("response: " + global_response)
+
+        if global_response[18] == 'b':
+            if len(global_response) == 0:
+                continue
+            else:
+                pos = 0
+
+        real_data_element = parseResponseS2(global_response, pos)
+        # real_data_element =
+        # {0: [25615, 43879], 1: [25615, 47479], 2: [65535, 64534], 3: [1, 31679], 4: [0, 153], 5: [0, 12114],
+        # 9: [25606, 10664], 10: [65535, 64534], 11: [65535, 64980], 12: [0, 5875], 13: [0, 12672], 14: [0, 0], 15: [0,
+        # 65535], 16: [0, 65535], 17: [0, 65535], 18: [65535, 65520], 19: [65531, 34426], 20: [0, 0], 21: [0, 16],
+        # 22: [65535, 65535], 23: [65535, 65450], 24: [65535, 65048], 25: [65515, 983], 26: [0, 0], 27: [0, 0], 28: [0,
+        # 0], 29: [0, 65535], 30: [0, 65535], 31: [0, 65535], 32: [0, 65535], 33: [0, 0], 34: [65535, 65532], 35: [0,
+        # 18386], 36: [0, 26940], 37: [0, 0], 38: [0, 65535], 39: [0, 65535], 40: [0, 65535], 41: [0, 0], 42: [65529,
+        # 51037], 43: [65535, 65529], 44: [4, 9403], 45: [0, 0], 46: [65533, 6493], 47: [0, 0], 48: [65535, 18413],
+        # 49: [0, 0], 50: [15776, 53404], 51: [65535, 64980], 52: [0, 12672], 53: [32767, 65535], 54: [65531, 42226],
+        # 55: [15984, 17996], 56: [65535, 65532], 57: [0, 26940], 58: [32767, 65535], 59: [65253, 37546], 60: [0, 0],
+        # 61: [0, 0], 62: [0, 0], 63: [0, 54], 64: [0, 57], 65: [0, 65535], 66: [0, 44], 67: [0, 0], 68: [282, 2829],
+        # 69: [5, 58], 70: [300, 3000]}
+        debug(real_data_element)
+        for diff in list(dictdiffer.diff(old_element, real_data_element)):
+            print("The Diff: " + str(diff))
+        old_element = copy.deepcopy(real_data_element)
+
+        # Add values to global_sensorList copy
+
+        for deviceSensor in global_sensorList:
+            sensorLiveData = global_sensorList[deviceSensor]['pos']
+            itemType = global_sensorList[deviceSensor]['type_csl']
+            itemName = global_sensorList[deviceSensor]['name']
+
+            # print('global_sensorList[' + str(deviceSensor) + '] pos[' + str(sensorLiveData) + '] name:[' + str(
+            #    itemName) + ']' + 'itemType:[' + str(itemType) + ']')
+            try:
+                if itemType == 'SolarPower':
+                    readSolarPower(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'Charger':
+                    readChargerPower(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'barometer':
+                    readBaro(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'current':
+                    readCurrent(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'ohm':
+                    readOhm(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'battery':
+                    readBatt(deviceSensor, sensorLiveData, itemName, global_sensorList, sensorListTmp, real_data_element)
+                if itemType == 'tank':
+                    readTank(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'thermometer':
+                    readTemp(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == 'volt':
+                    readVolt(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+            except (KeyError, LookupError):
+                print("KeyError or LookupError - we try again in 5 seconds")
+                sys.stdout.flush()
+                empty_socket(client)
+                time.sleep(5)
+                prepare_connection(2)
+
+        print(json.dumps(sensorListTmp))
+        sys.stdout.flush()
+        empty_socket(client)
+
+
+def prepare_connection(i):
+    global_sensorList = {}
+    responseB = [''] * 50
+    responseC = []
+    old_element = {}
+
+    # Assign pico address
+    picoIp = "192.168.8.146"
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    debug("Start TCP listener")
+    # Setup UDP broadcasting listener
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    client.bind(("", 43210))
+
+    try:
         message, addr = client.recvfrom(2048)
-        debug("Received packet with length " + str(len(message)))
-        if 100 < len(message) < 2048:
+        picoIp = addr[0]
+        for i in range(0, 100):
+            while True:
+                try:
+                    global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, s, client)
+                    debug("CONFIG:" + str(global_config))
+                    global_sensorList = createSensorList(global_config)
+                    debug("SensorList:" + str(global_sensorList))
+                    print(json.dumps(global_sensorList))
+                    infiniteMakeList(global_sensorList, client, old_element)
+                    print("Try: " + str(i) + " - too many retries, something went wrong")
+                    exit(0)
+
+                except (KeyError, LookupError):
+                    sys.stdout.flush()
+                    time.sleep(0.9)
+                    empty_socket(client)
+                    continue
+                except KeyboardInterrupt:
+                    empty_socket_has_exit(client, 'End of Application by User')
+
+                empty_socket(client)
+                print("Try: " + str(i) + " - Refresh in 6 sec.")
+                time.sleep(6)
+                prepare_connection(i)
+                # global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, s, client)
             break
+    except KeyboardInterrupt:
+        debug("See Pico at KeyboardInterrupt")
+    finally:
+        debug("See Pico at f KeyboardInterrupt")
 
-    global_response = BinToHex(message)
+    return i
 
-    debug("response: " + global_response)
 
-    if global_response[18] == 'b':
-        if len(global_response) == 0:
-            continue
-        else:
-            pos = 0
-
-    real_data_element = parseResponseS2(global_response, pos)
-    # real_data_element =
-    # {0: [25615, 43879], 1: [25615, 47479], 2: [65535, 64534], 3: [1, 31679], 4: [0, 153], 5: [0, 12114],
-    # 9: [25606, 10664], 10: [65535, 64534], 11: [65535, 64980], 12: [0, 5875], 13: [0, 12672], 14: [0, 0], 15: [0,
-    # 65535], 16: [0, 65535], 17: [0, 65535], 18: [65535, 65520], 19: [65531, 34426], 20: [0, 0], 21: [0, 16],
-    # 22: [65535, 65535], 23: [65535, 65450], 24: [65535, 65048], 25: [65515, 983], 26: [0, 0], 27: [0, 0], 28: [0,
-    # 0], 29: [0, 65535], 30: [0, 65535], 31: [0, 65535], 32: [0, 65535], 33: [0, 0], 34: [65535, 65532], 35: [0,
-    # 18386], 36: [0, 26940], 37: [0, 0], 38: [0, 65535], 39: [0, 65535], 40: [0, 65535], 41: [0, 0], 42: [65529,
-    # 51037], 43: [65535, 65529], 44: [4, 9403], 45: [0, 0], 46: [65533, 6493], 47: [0, 0], 48: [65535, 18413],
-    # 49: [0, 0], 50: [15776, 53404], 51: [65535, 64980], 52: [0, 12672], 53: [32767, 65535], 54: [65531, 42226],
-    # 55: [15984, 17996], 56: [65535, 65532], 57: [0, 26940], 58: [32767, 65535], 59: [65253, 37546], 60: [0, 0],
-    # 61: [0, 0], 62: [0, 0], 63: [0, 54], 64: [0, 57], 65: [0, 65535], 66: [0, 44], 67: [0, 0], 68: [282, 2829],
-    # 69: [5, 58], 70: [300, 3000]}
-    debug(real_data_element)
-    for diff in list(dictdiffer.diff(old_element, real_data_element)):
-        print(diff)
-    old_element = copy.deepcopy(real_data_element)
-
-    # Add values to global_sensorList copy
-
-    for deviceSensor in global_sensorList:
-        sensorLiveData = global_sensorList[deviceSensor]['pos']
-        itemType = global_sensorList[deviceSensor]['type_csl']
-        itemName = global_sensorList[deviceSensor]['name']
-
-        print('global_sensorList[' + str(deviceSensor) + '] pos[' + str(sensorLiveData) + '] name:[' + str(
-            itemName) + ']' + 'itemType:[' + str(itemType) + ']')
-
-        if itemType == 'SolarPower':
-            readSolarPower(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'Charger':
-            readChargerPower(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'barometer':
-            readBaro(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'current':
-            readCurrent(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'ohm':
-            readOhm(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'battery':
-            readBatt(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'tank':
-            readTank(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'thermometer':
-            readTemp(deviceSensor, sensorLiveData, itemName)
-        if itemType == 'volt':
-            readVolt(deviceSensor, sensorLiveData, itemName)
-
-    print(json.dumps(sensorListTmp))
-
-    sys.stdout.flush()
-    time.sleep(0.9)
-    empty_socket_has_exit(client, 'End of Application')
+prepare_connection(1)
