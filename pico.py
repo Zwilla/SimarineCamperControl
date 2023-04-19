@@ -437,7 +437,7 @@ def createSensorList(config_csl):
 
         if type_csl == 5:
             type_csl = 'barometer'
-            elementSize = 1
+            elementSize = 1  # is 2
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
@@ -714,13 +714,13 @@ def createSensorList(config_csl):
 
 def setElementgosort(elementId, SensorName):
     # print("SensorName:" + SensorName)
-    elementgo = 0
+    elementgo = elementId
     if elementId == 1:
         elementgo = 0  # readChargerPower
     if elementId == 2:
         elementgo = 1  # readSolarPower
     if elementId == 3:  # Barometer
-        elementgo = 3  # = readBaro
+        elementgo = 3  # readBaro
     if elementId == 4:  # Pico Internal
         elementgo = 5  # readVolt
     if elementId == 5:  # SPU62 1
@@ -791,7 +791,7 @@ def setElementgosort(elementId, SensorName):
 
 def setElementgo(elementId, SensorName):
     # print("SensorName:" + SensorName)
-    elementgo = 0
+    elementgo = elementId
     if elementId == 1:
         elementgo = 0  # readChargerPower
 
@@ -873,6 +873,15 @@ def setElementgo(elementId, SensorName):
         print('catch elementId' + str(elementId))
 
     return elementgo
+
+
+def readPitchRoll(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+    # print("SensorName:" + SensorName)
+    elementgo = setElementgo(elementId, SensorName)
+    Pitch = real_data_element[elementgo][1] / float(1000)
+    sensorListTmp[sensorId].update({'Pitch': Pitch})
+    Roll = real_data_element[elementgo][1 + 1] / float(1000)
+    sensorListTmp[sensorId].update({'Roll': Roll})
 
 
 def readVolt(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
@@ -1036,6 +1045,8 @@ def infiniteMakeList(global_sensorList, client, old_element):
                     readTemp(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
                 if itemType == 'volt':
                     readVolt(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                if itemType == '13 Nick Roll':
+                    readPitchRoll(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
             except (KeyError, LookupError):
                 print("KeyError or LookupError - we try again in 5 seconds")
                 sys.stdout.flush()
