@@ -1,37 +1,13 @@
-const id = "picoCC";
+const id = "picoCaravanControl";
 const { spawn } = require('node:child_process');
-const WebSocket = require("ws");
+
 let plugin = {}
-const wss = new WebSocket.Server({
-    port: 8080
-});
-
-wss.on("connection", function connection(ws) {
-    console.log("Client connected to websocket");
-});
-
-const py = spawn("python", ["pico.py"]);
-
-py.stdout.on("data", (data) => {
-
-    // broadcast the new binary image to all clients
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(data);
-        }
-    });
-
-});
-
-py.stderr.on("data", (data) => {
-    console.error(data.toString());
-});
 
 module.exports = function(app, options) {
   "use strict"
   let plugin = {}
   plugin.id = id
-  plugin.name = "Simarine Pico and Camper Control to SignalK"
+  plugin.name = "Simarine Pico and Caravan Control to SignalK"
   plugin.description = "Read Simarine config_csl and updates from the network."
 
   let unsubscribes = []
@@ -246,6 +222,7 @@ module.exports = function(app, options) {
           let field_data = [a, b]
           hexString = hexString.substr(14)
           return [field_nr, field_data, hexString]
+          break
         case 3:
           break
         case 4:
