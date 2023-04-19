@@ -1,0 +1,13 @@
+{
+  "id": "Simarine Caravan Control",
+  "pipeElements": [{
+    "type": "providers/execute",
+    "options": {
+      "command": "python /home/pi/Pico2SignalK/pico.py"
+    }
+  }, {
+    "type": "providers/liner"
+  }, {
+    "type": "providers/from_json"
+  }]
+}
