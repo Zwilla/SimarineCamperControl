@@ -312,18 +312,24 @@ def get_pico_config(pico_ip_get, s, client):
     config_SimarineSystem = {}
     open_tcp(pico_ip_get, s)
     messageSi = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
-    messageSi = add_crc(messageSi)
+    messageSi1 = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
+    # messageCRC_Pre1 = add_crc(messageSi1)
+    # '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff a8 c0'
+    # '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 00 ff 01 03 00 00 00 00 ff 00 00 00 00 ff e8 19'
+    messageCRC_Pre = add_crc(messageSi)
     # Response: 00 00 00 00 00 ff 02 04 8c 55 4b 00 11 ff 01 01 00 00 00 1e ff 02 01 00 00 00 30 ff 32 cf
     try:
-        response_gpc = send_receive(messageSi, s, client)
+        response_gpc = send_receive(messageCRC_Pre, s, client)
+        # response_gpc = '00 00 00 00 00 FF 02 7F DF E8 02 00 11 FF 01 01 00 00 00 31 FF 02 01 00 00 00 43 FF AE 2C'
         req_count = int(response_gpc.split()[19], 16) + 1
         debug("req_count: " + str(req_count))
+        # req_count = 255  # = max entries
         for devicePos in range(req_count):
-            messageSi = (
+            messageCRC_Count = (
                     '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 ' + "%02x" % devicePos +
                     ' ff 01 03 00 00 00 00 ff 00 00 00 00 ff')
-            messageSi = add_crc(messageSi)
-            response_gpc = send_receive(messageSi, s, client)
+            messageCRC = add_crc(messageCRC_Count)
+            response_gpc = send_receive(messageCRC, s, client)
             device_Simarine = parseResponse(response_gpc, devicePos)
             config_SimarineSystem[devicePos] = device_Simarine
 
@@ -719,196 +725,241 @@ def createSensorList(config_csl):
     return sensorListSi
 
 
-def setElementgosort(elementId, SensorName):
+def setElementGoSortValue(elementId, SensorName):
     # print("SensorName:" + SensorName)
     elementgo = elementId
     if elementId == 1:
-        elementgo = 0  # readChargerPower
+        elementgo = 0  # readChargerPower [0, 1], (15242, 15247))
+
     if elementId == 2:
-        elementgo = 1  # readSolarPower
+        elementgo = 1  # readSolarPower [1, 1], (15242, 15247))
+
     if elementId == 3:  # Barometer
         elementgo = 3  # readBaro
+
+    if elementId == 26:  # BATPICO
+        elementgo = 3  # readBatt
+
+    if elementId == 27:  # STARTEREINGANG
+        elementgo = 3  # readBatt
+
+    if elementId == 99:  # unknown
+        elementgo = 4  # readUnknown Val: 0, 65511
+
     if elementId == 4:  # Pico Internal
-        elementgo = 5  # readVolt
+        elementgo = 5  # readVolt [5, 1], (2032, 2031))
+
+    if elementId == 99:  # unknown
+        elementgo = 6  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 7  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 8  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 9  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 10  # readUnknown
+
     if elementId == 5:  # SPU62 1
         elementgo = 11  # readCurrent= sensorId
+
     if elementId == 6:  # SPU62 2
         elementgo = 12  # readCurrent= sensorId
+
     if elementId == 7:  # SPU62 3
         elementgo = 13  # readCurrent= sensorId
+
     if elementId == 8:  # SPU62 4
         elementgo = 14  # readCurrent= sensorId
-    if elementId == 9:  # SPU62 1
-        elementgo = 19  # readVolt
-    if elementId == 10:  # SPU62 2 13.359
-        elementgo = 20  # readVolt
-    if elementId == 11:  # SPU62 3
-        elementgo = 21  # readVolt
-    if elementId == 12:  # SPU62 4
-        elementgo = 22  # readVolt
-    if elementId == 13:  # SPU62 1
-        elementgo = 23  # readOhm
-    if elementId == 14:  # SPU62 2
-        elementgo = 24  # readOhm
-    if elementId == 15:  # SPU62 3
-        elementgo = 25  # readOhm
-    if elementId == 16:  # SPU62 4
-        elementgo = 26  # readOhm
+
+    if elementId == 99:  # unknown
+        elementgo = 15  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 16  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 17  # readUnknown
 
     if elementId == 19:  # Battery 1
         elementgo = 18  # readBatt
-    if elementId == 20:  # Frischwasser
-        elementgo = 34  # readTank
+
+    if elementId == 9:  # SPU62 1
+        elementgo = 19  # readVolt [19, 1], (511, 510))
+
+    if elementId == 10:  # SPU62 2 13.359
+        elementgo = 20  # readVolt  [20, 1], (13346, 13345))
+
     if elementId == 21:  # Starterbat
         elementgo = 20  # readBatt
-    if elementId == 22:  # BAT1.TEMP
-        elementgo = 44  # readTemp 15.2
-    if elementId == 23:  # BAT2.TEMP
-        elementgo = 45  # readTemp 19.6
-    if elementId == 24:  # STARTERBAT.TEMP
-        elementgo = 46  # readTemp 17.6
-    if elementId == 25:  # HEIZUNG OUT
-        elementgo = 47  # readTemp 16.6
-    if elementId == 26:  # BATPICO
-        elementgo = 3  # readBatt
-    if elementId == 27:  # STARTEREINGANG
-        elementgo = 3  # readBatt
-    if elementId == 28:  # SC303 5450
-        elementgo = 29  # readCurrent
-    if elementId == 29:  # SC303 5450 1
-        elementgo = 40  # readVolt
-    if elementId == 30:  # SC303 5450 2
-        elementgo = 41  # readVolt
-    if elementId == 31:  # SC303 5450 1
-        elementgo = 62  # readOhm
-    if elementId == 32:  # SC303 5450 2
-        elementgo = 63  # readOhm
-    if elementId == 33:  # SC303 5450 3
-        elementgo = 64  # readOhm
-    if elementId == 34:  # SC303.TEMP
-        elementgo = 65  # readTemp 17.6
-    if elementId == 35:  # GRAUWASSER
-        elementgo = 35  # readTank
 
-    if elementId == 17 or elementId >= 36:
-        print('catch elementId' + str(elementId))
-
-    return elementgo
-
-
-def setElementgo(elementId, SensorName):
-    # print("SensorName:" + SensorName)
-    elementgo = elementId
-    if elementId == 1:
-        elementgo = 0  # readChargerPower
-
-    if elementId == 3:  # Barometer
-        elementgo = 3  # = readBaro
-
-    if elementId == 4:  # Pico Internal
-        elementgo = 5  # readVolt
-    if elementId == 9:  # SPU62 1
-        elementgo = 19  # readVolt
-    if elementId == 10:  # SPU62 2 13.359
-        elementgo = 20  # readVolt
     if elementId == 11:  # SPU62 3
         elementgo = 21  # readVolt
+
     if elementId == 12:  # SPU62 4
         elementgo = 22  # readVolt
-    if elementId == 29:  # SC303 5450 1
-        elementgo = 40  # readVolt
-    if elementId == 30:  # SC303 5450 2
-        elementgo = 41  # readVolt
 
-    if elementId == 5:  # SPU62 1
-        elementgo = 11  # readCurrent= sensorId
-    if elementId == 6:  # SPU62 2
-        elementgo = 12  # readCurrent= sensorId
-    if elementId == 7:  # SPU62 3
-        elementgo = 13  # readCurrent= sensorId
-    if elementId == 8:  # SPU62 4
-        elementgo = 14  # readCurrent= sensorId
+    if elementId == 13:  # SPU62 1
+        elementgo = 23  # readOhm
+
+    if elementId == 14:  # SPU62 2
+        elementgo = 24  # readOhm
+
+    if elementId == 15:  # SPU62 3
+        elementgo = 25  # readOhm
+
+    if elementId == 16:  # SPU62 4
+        elementgo = 26  # readOhm
+
+    if elementId == 99:  # unknown
+        elementgo = 27  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 28  # readUnknown 0,1
+
     if elementId == 28:  # SC303 5450
         elementgo = 29  # readCurrent
 
-    if elementId == 22:  # BAT1.TEMP
-        elementgo = 44  # readTemp 15.2
-    if elementId == 23:  # BAT2.TEMP
-        elementgo = 45  # readTemp 19.6
-    if elementId == 24:  # STARTERBAT.TEMP
-        elementgo = 46  # readTemp 17.6
-    if elementId == 25:  # HEIZUNG OUT
-        elementgo = 47  # readTemp 16.6
-    if elementId == 34:  # SC303.TEMP
-        elementgo = 65  # readTemp 17.6
+    if elementId == 17:  # Pitch
+        elementgo = 30  # readUnknown Val: 0,119  0,65503  0,53 [30, 1], (70, 72)) [30, 1], (104, 114))
+
+    if elementId == 99:  # unknown
+        elementgo = 31  # readUnknown Val: 0,65428 0,65515 0,91 65535,65525 [31, 1], (7, 3)) [31, 1], (65443, 65436))
+
+    if elementId == 99:  # unknown
+        elementgo = 32  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 33  # readUnknown
 
     if elementId == 20:  # Frischwasser
         elementgo = 34  # readTank
+
     if elementId == 35:  # GRAUWASSER
         elementgo = 35  # readTank
 
-    if elementId == 12:
-        elementgo = 23  # readOhm
-    if elementId == 13:  # SPU62 1
-        elementgo = 23  # readOhm
-    if elementId == 14:  # SPU62 2
-        elementgo = 24  # readOhm
-    if elementId == 15:  # SPU62 3
-        elementgo = 25  # readOhm
-    if elementId == 16:  # SPU62 4
-        elementgo = 26  # readOhm
+    if elementId == 99:  # unknown
+        elementgo = 36  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 37  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 38  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 39  # readUnknown
+
+    if elementId == 29:  # SC303 5450 1
+        elementgo = 40  # readVolt
+
+    if elementId == 30:  # SC303 5450 2
+        elementgo = 41  # readVolt
+
+    if elementId == 99:  # unknown
+        elementgo = 42  # readUnknown Val: 0,
+
+    if elementId == 99:  # unknown
+        elementgo = 43  # readUnknown
+
+    if elementId == 22:  # BAT1.TEMP
+        elementgo = 44  # readTemp 15.2
+
+    if elementId == 23:  # BAT2.TEMP
+        elementgo = 45  # readTemp 19.6
+
+    if elementId == 24:  # STARTERBAT.TEMP
+        elementgo = 46  # readTemp 17.6
+
+    if elementId == 25:  # HEIZUNG OUT
+        elementgo = 47  # readTemp 16.6
+
+    if elementId == 99:  # unknown
+        elementgo = 48  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 49  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 50  # readUnknown Val: 0,12031 0,1890 0,2010 0,2024 [50, 1], (2032, 2031))
+
+    if elementId == 99:  # unknown
+        elementgo = 51  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 52  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 53  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 54  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 55  # readUnknown Val: 0,13345 0,13344 0,13342 [55, 1], (13345, 13344))
+
+    if elementId == 99:  # unknown
+        elementgo = 56  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 57  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 58  # readUnknown 0,1   0,0     0,1
+
+    if elementId == 99:  # unknown
+        elementgo = 59  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 60  # readUnknown
+
+    if elementId == 99:  # unknown
+        elementgo = 61  # readUnknown
+
     if elementId == 31:  # SC303 5450 1
         elementgo = 62  # readOhm
+
     if elementId == 32:  # SC303 5450 2
         elementgo = 63  # readOhm
+
     if elementId == 33:  # SC303 5450 3
         elementgo = 64  # readOhm
 
-    if elementId == 2:
-        elementgo = 1  # readSolarPower
-
-    if elementId == 19:  # Battery 1
-        elementgo = 18  # readBatt is 18 & 19
-    if elementId == 21:  # Starterbat
-        elementgo = 20  # readBatt is 20 & 21
-    if elementId == 26:  # BATPICO
-        elementgo = 3  # readBatt is 3 & 4
-    if elementId == 27:  # STARTEREINGANG
-        elementgo = 3  # readBatt is 3 & 4
+    if elementId == 34:  # SC303.TEMP
+        elementgo = 65  # readTemp 17.6
 
     if elementId == 17 or elementId >= 36:
         print('catch elementId' + str(elementId))
-    if elementId == 36:  # SC301 [6264]
-        elementgo = 67  # readAmp
-    if elementId == 37:  # SC301 [6264] 1
-        elementgo = 67  # readVolt
-    if elementId == 38:  # SC301 [6264] 2
-        elementgo = 67  # readVolt
-    if elementId == 39:  # SC301 [6264]
-        elementgo = 67  # readOhm
 
     return elementgo
 
 
 def readPitchRoll(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
-    Pitch = real_data_element[elementgo][1] / float(1000)
-    sensorListTmp[sensorId].update({'Pitch': Pitch})
-    Roll = real_data_element[elementgo][1 + 1] / float(1000)
-    sensorListTmp[sensorId].update({'Roll': Roll})
+    elementgo = setElementGoSortValue(elementId, SensorName)
+
+    if elementId == 17:
+        Pitch = real_data_element[elementgo][1] / float(10)
+        sensorListTmp[sensorId].update({'Pitch': Pitch})
+    if elementId == 18:
+        Roll = real_data_element[elementgo][1] / float(10)
+        sensorListTmp[sensorId].update({'Roll': Roll})
 
 
 def readVolt(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     voltage = real_data_element[elementgo][1] / float(1000)
     sensorListTmp[sensorId].update({'voltage': voltage})
 
 
 def readCurrent(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     current = real_data_element[elementgo][1]
     if current > 25000:
         current = (65535 - current) / float(100)
@@ -919,21 +970,21 @@ def readCurrent(sensorId, elementId, SensorName, sensorListTmp, real_data_elemen
 
 def readBaro(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     pressure = float((real_data_element[elementgo][1] + 65536) / 100)
     sensorListTmp[sensorId].update({'pressure': pressure})
 
 
 def readTemp(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     temperature = float(real_data_element[elementgo][1] / 10)
     sensorListTmp[sensorId].update({'temperature': temperature})
 
 
 def readTank(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     currentLevel = real_data_element[elementgo][0] / float(10)
     currentVolume = real_data_element[elementgo][1] / float(10)
     sensorListTmp[sensorId].update({'currentLevel': currentLevel})
@@ -942,14 +993,14 @@ def readTank(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
 
 def readOhm(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     ohm = real_data_element[elementgo][1]
     sensorListTmp[sensorId].update({'ohm': ohm})
 
 
 def readSolarPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     currentAmp = real_data_element[elementgo][0] / float(1000)
     currentVolt = real_data_element[elementgo][1] / float(10000)
     sensorListTmp[sensorId].update({'currentAmp': currentAmp})
@@ -958,14 +1009,14 @@ def readSolarPower(sensorId, elementId, SensorName, sensorListTmp, real_data_ele
 
 def readChargerPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
     sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
 
 
 def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, real_data_element):
     # print("SensorName:" + SensorName)
-    elementgo = setElementgo(elementId, SensorName)
+    elementgo = setElementGoSortValue(elementId, SensorName)
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
     voltage = real_data_element[elementgo + 2][1] / float(1000)
     capacityRemaining = real_data_element[elementgo][1] * stateOfCharge
