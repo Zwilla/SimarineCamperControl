@@ -827,7 +827,7 @@ def setElementGoSortValue(elementId, SensorName):
     if elementId == 17:  # Pitch
         elementgo = 30  # readUnknown Val: 0,119  0,65503  0,53 [30, 1], (70, 72)) [30, 1], (104, 114))
 
-    if elementId == 99:  # unknown
+    if elementId == 99:  # Roll
         elementgo = 31  # readUnknown Val: 0,65428 0,65515 0,91 65535,65525 [31, 1], (7, 3)) [31, 1], (65443, 65436))
 
     if elementId == 99:  # unknown
@@ -943,10 +943,20 @@ def readPitchRoll(sensorId, elementId, SensorName, sensorListTmp, real_data_elem
     elementgo = setElementGoSortValue(elementId, SensorName)
 
     if elementId == 17:
-        Pitch = real_data_element[elementgo][1] / float(10)
+        if (real_data_element[elementgo][1] / float(10)) <= 89:
+            Pitch = real_data_element[elementgo][1] / float(10)
+        else:
+            Pitch = (65635 - real_data_element[elementgo][1]) / float(10)
+        # 65503
+
         sensorListTmp[sensorId].update({'Pitch': Pitch})
+
     if elementId == 18:
-        Roll = real_data_element[elementgo][1] / float(10)
+        if (real_data_element[elementgo][1] / float(10)) <= 89:
+            Roll = real_data_element[elementgo][1] / float(10)
+        else:
+            Roll = (65635 - real_data_element[elementgo][1]) / float(10)
+
         sensorListTmp[sensorId].update({'Roll': Roll})
 
 
