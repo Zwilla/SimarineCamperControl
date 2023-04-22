@@ -595,21 +595,39 @@ def createSensorList(config_csl):
             sensorListSi[id_csl].update({'val.4.1': config_csl[entry][4][1]})
 
         if type_csl == 13:
-            type_csl = '13 Nick Roll'
+            type_csl = '13 Pitch Nick Roll'
 
             elementSize = 1
             elementPos = elementPos + elementSize
             sensorListSi[id_csl].update({'pos': elementPos})
             sensorListSi[id_csl].update({'type_csl': type_csl})
-            sensorListSi[id_csl].update({'name': 'Nick Roll'})
+            if elementPos == 17:
+                sensorListSi[id_csl].update({'name': 'Pitch'})
+            if elementPos == 18:
+                sensorListSi[id_csl].update({'name': 'Roll'})
+
+            if config_csl[entry][6][1] == 1:
+                sensorListSi[id_csl].update({'Reverse': 'on'})
+            if config_csl[entry][6][1] == 2:
+                sensorListSi[id_csl].update({'Reverse': 'off'})
 
             if config_csl[entry][7][1] == 1:
                 sensorListSi[id_csl].update({'Ino Type': 'Boat'})
             if config_csl[entry][7][1] == 2:
                 sensorListSi[id_csl].update({'Ino Type': 'Caravan'})
 
+            if config_csl[entry][9][1] == 1:
+                sensorListSi[id_csl].update({'Non Linear': 'on'})
+            if config_csl[entry][9][1] == 2:
+                sensorListSi[id_csl].update({'Linear': 'on'})
+
+            if config_csl[entry][10][1] == 1:
+                sensorListSi[id_csl].update({'Display': 'on'})
+            if config_csl[entry][10][1] == 2:
+                sensorListSi[id_csl].update({'Display': 'off'})
+
             sensorListSi[id_csl].update({'Calibration min 0': config_csl[entry][8][0]})
-            sensorListSi[id_csl].update({'Calibration max 2500': config_csl[entry][8][1]})
+            sensorListSi[id_csl].update({'Calibration max 2500mV': config_csl[entry][8][1]})
             sensorListSi[id_csl].update({'val a': config_csl[entry][11][0]})
             sensorListSi[id_csl].update({'val b': config_csl[entry][11][1]})
 
@@ -827,7 +845,7 @@ def setElementGoSortValue(elementId, SensorName):
     if elementId == 17:  # Pitch
         elementgo = 30  # readUnknown Val: 0,119  0,65503  0,53 [30, 1], (70, 72)) [30, 1], (104, 114))
 
-    if elementId == 99:  # Roll
+    if elementId == 18:  # Roll
         elementgo = 31  # readUnknown Val: 0,65428 0,65515 0,91 65535,65525 [31, 1], (7, 3)) [31, 1], (65443, 65436))
 
     if elementId == 99:  # unknown
@@ -938,7 +956,7 @@ def setElementGoSortValue(elementId, SensorName):
     return elementgo
 
 
-def readPitchRoll(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readPitchRoll(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
 
@@ -946,28 +964,28 @@ def readPitchRoll(sensorId, elementId, SensorName, sensorListTmp, real_data_elem
         if (real_data_element[elementgo][1] / float(10)) <= 89:
             Pitch = real_data_element[elementgo][1] / float(10)
         else:
-            Pitch = (65635 - real_data_element[elementgo][1]) / float(10)
+            Pitch = ((65535 - real_data_element[elementgo][1]) / float(10)) * - 1
         # 65503
 
-        sensorListTmp[sensorId].update({'Pitch': Pitch})
+        global_sensorList[sensorId].update({'Pitch': Pitch})
 
     if elementId == 18:
         if (real_data_element[elementgo][1] / float(10)) <= 89:
             Roll = real_data_element[elementgo][1] / float(10)
         else:
-            Roll = (65635 - real_data_element[elementgo][1]) / float(10)
+            Roll = ((65535 - real_data_element[elementgo][1]) / float(10)) * -1
 
-        sensorListTmp[sensorId].update({'Roll': Roll})
+        global_sensorList[sensorId].update({'Roll': Roll})
 
 
-def readVolt(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readVolt(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     voltage = real_data_element[elementgo][1] / float(1000)
-    sensorListTmp[sensorId].update({'voltage': voltage})
+    global_sensorList[sensorId].update({'voltage': voltage})
 
 
-def readCurrent(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readCurrent(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     current = real_data_element[elementgo][1]
@@ -975,56 +993,56 @@ def readCurrent(sensorId, elementId, SensorName, sensorListTmp, real_data_elemen
         current = (65535 - current) / float(100)
     else:
         current = current / float(100) * -1
-    sensorListTmp[sensorId].update({'current': current})
+    global_sensorList[sensorId].update({'current': current})
 
 
-def readBaro(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readBaro(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     pressure = float((real_data_element[elementgo][1] + 65536) / 100)
-    sensorListTmp[sensorId].update({'pressure': pressure})
+    global_sensorList[sensorId].update({'pressure': pressure})
 
 
-def readTemp(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readTemp(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     temperature = float(real_data_element[elementgo][1] / 10)
-    sensorListTmp[sensorId].update({'temperature': temperature})
+    global_sensorList[sensorId].update({'temperature': temperature})
 
 
-def readTank(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readTank(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     currentLevel = real_data_element[elementgo][0] / float(10)
     currentVolume = real_data_element[elementgo][1] / float(10)
-    sensorListTmp[sensorId].update({'currentLevel': currentLevel})
-    sensorListTmp[sensorId].update({'currentVolume': currentVolume})
+    global_sensorList[sensorId].update({'currentLevel': currentLevel})
+    global_sensorList[sensorId].update({'currentVolume': currentVolume})
 
 
-def readOhm(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readOhm(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     ohm = real_data_element[elementgo][1]
-    sensorListTmp[sensorId].update({'ohm': ohm})
+    global_sensorList[sensorId].update({'ohm': ohm})
 
 
-def readSolarPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readSolarPower(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     currentAmp = real_data_element[elementgo][0] / float(1000)
     currentVolt = real_data_element[elementgo][1] / float(10000)
-    sensorListTmp[sensorId].update({'currentAmp': currentAmp})
-    sensorListTmp[sensorId].update({'currentVolt': currentVolt})
+    global_sensorList[sensorId].update({'currentAmp': currentAmp})
+    global_sensorList[sensorId].update({'currentVolt': currentVolt})
 
 
-def readChargerPower(sensorId, elementId, SensorName, sensorListTmp, real_data_element):
+def readChargerPower(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
-    sensorListTmp[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
-    sensorListTmp[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
+    global_sensorList[sensorId].update({'currentAmp': real_data_element[elementgo][0] / float(1000)})
+    global_sensorList[sensorId].update({'currentVolt': real_data_element[elementgo][1] / float(10000)})
 
 
-def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, real_data_element):
+def readBatt(sensorId, elementId, SensorName, global_sensorList, real_data_element):
     # print("SensorName:" + SensorName)
     elementgo = setElementGoSortValue(elementId, SensorName)
     stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
@@ -1032,15 +1050,15 @@ def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, 
     capacityRemaining = real_data_element[elementgo][1] * stateOfCharge
     current = real_data_element[elementgo + 1][1]
 
-    sensorListTmp[sensorId].update({'stateOfCharge': stateOfCharge})
-    sensorListTmp[sensorId].update({'capacity.remaining': capacityRemaining})
-    sensorListTmp[sensorId].update({'voltage': voltage})
+    global_sensorList[sensorId].update({'stateOfCharge': stateOfCharge})
+    global_sensorList[sensorId].update({'capacity.remaining': capacityRemaining})
+    global_sensorList[sensorId].update({'voltage': voltage})
 
     if current > 25000:
         current = (65535 - current) / float(100)
     else:
         current = current / float(100) * -1
-        sensorListTmp[sensorId].update({'current': current})
+        global_sensorList[sensorId].update({'current': current})
         stateOfCharge = float("%.2f" % (real_data_element[elementgo][0] / 16000.0))
 
     if real_data_element[elementgo][0] != 65535:
@@ -1048,7 +1066,7 @@ def readBatt(sensorId, elementId, SensorName, global_sensorList, sensorListTmp, 
             (global_sensorList[sensorId]['capacity.nominal']) / 12 / ((current * stateOfCharge) + 0.001))
         if timeRemaining < 0:
             timeRemaining = 60 * 60 * 24 * 7  # One week
-        sensorListTmp[sensorId].update({'capacity.timeRemaining': timeRemaining})
+        global_sensorList[sensorId].update({'capacity.timeRemaining': timeRemaining})
 
 
 def infiniteMakeList(global_sensorList, client, old_element, loggerID):
@@ -1103,26 +1121,25 @@ def infiniteMakeList(global_sensorList, client, old_element, loggerID):
 
             try:
                 if itemType == 'SolarPower':
-                    readSolarPower(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readSolarPower(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'Charger':
-                    readChargerPower(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readChargerPower(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'barometer':
-                    readBaro(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readBaro(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'current':
-                    readCurrent(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readCurrent(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'ohm':
-                    readOhm(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readOhm(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'battery':
-                    readBatt(deviceSensor, sensorLiveData, itemName, global_sensorList, sensorListTmp,
-                             real_data_element)
+                    readBatt(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'tank':
-                    readTank(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readTank(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'thermometer':
-                    readTemp(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readTemp(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
                 if itemType == 'volt':
-                    readVolt(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
-                if itemType == '13 Nick Roll':
-                    readPitchRoll(deviceSensor, sensorLiveData, itemName, sensorListTmp, real_data_element)
+                    readVolt(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
+                if itemType == '13 Pitch Nick Roll':
+                    readPitchRoll(deviceSensor, sensorLiveData, itemName, global_sensorList, real_data_element)
             except (KeyError, LookupError):
                 print("KeyError or LookupError - we try again in 5 seconds")
                 sys.stdout.flush()
