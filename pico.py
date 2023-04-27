@@ -17,13 +17,12 @@ import brainsmoke
 
 responses = [''] * 200
 sensors = ['']
+DEBUG = 0
 
 
 def debug(string):
-    if "DEBUG" in os.environ:
-        if os.environ['DEBUG'] == 'picoCC':
-            print(string)
-            sys.stdout.flush()
+    print(string)
+    sys.stdout.flush()
 
 
 def empty_socket(sock):
@@ -109,7 +108,7 @@ def parse(message_p):
 
 def getNextField(response_gnf, position):
     field_nr = int(response_gnf[0:2], 16)
-    debug("field_type: " + response_gnf[3:6])
+    debug("field_type: " + response_gnf[3:6]) if DEBUG == 1 else False
     field_type = int(response_gnf[3:5], 16)
     c = position
 
@@ -161,11 +160,11 @@ def getNextField(response_gnf, position):
     # 40. position 45 - 67 = GRAUWASSER         (Type = 08) 2.nd data
 
     if field_type == 1:
-        debug(response_gnf)
-        debug("field_type1 a: " + response_gnf[6:11].replace(' ', ''))
-        debug("field_type1 b: " + response_gnf[12:17].replace(' ', ''))
+        debug(response_gnf) if DEBUG == 1 else False
+        debug("field_type1 a: " + response_gnf[6:11].replace(' ', '')) if DEBUG == 1 else False
+        debug("field_type1 b: " + response_gnf[12:17].replace(' ', '')) if DEBUG == 1 else False
         data = response_gnf[6:17]
-        debug("field_type1 data: " + data)
+        debug("field_type1 data: " + data) if DEBUG == 1 else False
         response_gnf = response_gnf[21:]
         # if (data[0:11] == '7f ff ff ff'):
         # return field_nr, '', response_pr
@@ -178,11 +177,11 @@ def getNextField(response_gnf, position):
         return field_nr, field_data, response_gnf
 
     if field_type == 3:
-        debug(response_gnf)
-        debug("field_type3 a: " + response_gnf[21:27].replace(' ', ''))
-        debug("field_type3 b: " + response_gnf[27:32].replace(' ', ''))
+        debug(response_gnf) if DEBUG == 1 else False
+        debug("field_type3 a: " + response_gnf[21:27].replace(' ', '')) if DEBUG == 1 else False
+        debug("field_type3 b: " + response_gnf[27:32].replace(' ', '')) if DEBUG == 1 else False
         data = response_gnf[21:32]
-        debug("field_type3 data: " + data)
+        debug("field_type3 data: " + data) if DEBUG == 1 else False
         response_gnf = response_gnf[36:]
         if data[0:11] == '7f ff ff ff':
             return field_nr, '', response_gnf
@@ -212,11 +211,11 @@ def getNextField(response_gnf, position):
 
 def getNextFieldS2(response_gnf, position):
     field_nrData = int(response_gnf[0:2], 16)
-    debug(response_gnf)
-    debug("field_type1 a: " + response_gnf[6:11].replace(' ', ''))
-    debug("field_type1 b: " + response_gnf[12:17].replace(' ', ''))
+    debug(response_gnf) if DEBUG == 1 else False
+    debug("field_type1 a: " + response_gnf[6:11].replace(' ', '')) if DEBUG == 1 else False
+    debug("field_type1 b: " + response_gnf[12:17].replace(' ', '')) if DEBUG == 1 else False
     data = response_gnf[6:17]
-    debug("field_type1 data: " + data)
+    debug("field_type1 data: " + data) if DEBUG == 1 else False
     response_gnf = response_gnf[21:]
     a = int(data[0:5].replace(' ', ''), 16)
     b = int(data[6:11].replace(' ', ''), 16)
@@ -232,11 +231,11 @@ def parseResponse(response_pr, position):
     while len(response_pr) > 6:
         position = position + 1
         field_nr, field_data, response_pr = getNextField(response_pr, position)
-        # debug(str(field_nr) + " " + field_data)
+        # debug(str(field_nr) + " " + field_data) if DEBUG == 1 else False
         # print('field_nr:' + str(field_nr))
         # print(' data:' + str(field_data))
-        debug(response_pr + " " + str(len(response_pr)))
-        debug(str(field_data))
+        debug(response_pr + " " + str(len(response_pr))) if DEBUG == 1 else False
+        debug(str(field_data)) if DEBUG == 1 else False
         dictSi[field_nr] = field_data
 
     return dictSi
@@ -253,8 +252,8 @@ def parseResponseS2(response_pr, position):
         # debug(str(field_nr) + " " + field_data)
         # print('field_nr:' + str(field_nr))
         # print(' data:' + str(field_data))
-        debug(response_pr + " " + str(len(response_pr)))
-        debug(str(field_data))
+        debug(response_pr + " " + str(len(response_pr))) if DEBUG == 1 else False
+        debug(str(field_data)) if DEBUG == 1 else False
         dictSi[field_nr] = field_data
 
     return dictSi
@@ -267,69 +266,80 @@ def add_crc(messageSi):
     return messageSi + " " + hexdump(crc_int)
 
 
-def send_receive(messageSi, s, client):
+def send_receive(messageSi, simarineSocket, client):
     bytesSi = messageSi.count(' ') + 1
-    debug(("Sending : " + messageSi + " (" + str(bytesSi) + " bytesSi)"))
+    debug(("Sending : " + messageSi + " (" + str(bytesSi) + " bytesSi)")) if DEBUG == 1 else False
     messageSi = bytearray.fromhex(messageSi)
     response_sr = ''
 
     try:
-        s.sendall(messageSi)
-        for x in s.recv(2048):
+        simarineSocket.sendall(messageSi)
+        for x in simarineSocket.recv(2048):
             hexSi = format(x, '02x')
             response_sr = response_sr + hexSi + ' '
-            debug('Response: ' + response_sr)
-    except (BlockingIOError, ConnectionAbortedError):
+            debug('Response: ' + response_sr) if DEBUG == 1 else False
+    except (BlockingIOError, ConnectionAbortedError, ConnectionResetError):
         sys.stdout.flush()
         time.sleep(0.9)
         empty_socket_has_exit(client, 'send_receive')
     finally:
-        debug("The 'try except' is finished - send_receive")
+        debug("The 'try except' is finished - send_receive") if DEBUG == 1 else False
 
     return response_sr
 
 
-def open_tcp(picoIp_ot, s):
+def open_tcp(picoIp_ot, simarineSocket):
     # Create a TCP stream socket with address family of IPv4 (INET)
     serverport = 5001
 
     try:
         # Connect to the server at given IP and port
-        s.connect((picoIp_ot, serverport))
+        simarineSocket.connect((picoIp_ot, serverport))
         return
 
     except (BrokenPipeError, OSError):
         print("Connection to " + str(picoIp_ot) + " at Port: " + str(serverport) + " failed. Retrying in 7 sec.")
         time.sleep(7)
         # try again
-        return open_tcp(picoIp_ot, s)
+        return open_tcp(picoIp_ot, simarineSocket)
 
     finally:
-        debug("The show must go on")
+        debug("The show must go on") if DEBUG == 1 else False
 
 
-def get_pico_config(pico_ip_get, s, client):
+def get_pico_config(pico_ip_get, simarineSocket, client):
     config_SimarineSystem = {}
-    open_tcp(pico_ip_get, s)
+    open_tcp(pico_ip_get, simarineSocket)
     messageSi = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
-    messageSi1 = '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff'
+
+    messageSi1 = '00 00 00 00 00 ff 02 04 8c 44 65 00 03 ff'
+    messageCRC_Pre1 = add_crc(messageSi1)
+    messageSi2 = '00 00 00 00 00 ff 02 04 8c 55 4c 00 03 ff'
+    messageCRC_Pre2 = add_crc(messageSi2)
+    messageSi3 = '00 00 00 00 00 ff 02 04 8c 55 4d 00 03 ff'
+    messageCRC_Pre3 = add_crc(messageSi3)
+    messageSi4 = '00 00 00 00 00 ff 02 04 8c 55 4e 00 03 ff'
+    messageCRC_Pre4 = add_crc(messageSi4)
+    messageSi5 = '00 00 00 00 00 ff 02 04 8c 55 4f 00 03 ff'
+    messageCRC_Pre5 = add_crc(messageSi5)
+
     # messageCRC_Pre1 = add_crc(messageSi1)
     # '00 00 00 00 00 ff 02 04 8c 55 4b 00 03 ff a8 c0'
     # '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 00 ff 01 03 00 00 00 00 ff 00 00 00 00 ff e8 19'
     messageCRC_Pre = add_crc(messageSi)
     # Response: 00 00 00 00 00 ff 02 04 8c 55 4b 00 11 ff 01 01 00 00 00 1e ff 02 01 00 00 00 30 ff 32 cf
     try:
-        response_gpc = send_receive(messageCRC_Pre, s, client)
+        response_gpc = send_receive(messageCRC_Pre, simarineSocket, client)
         # response_gpc = '00 00 00 00 00 FF 02 7F DF E8 02 00 11 FF 01 01 00 00 00 31 FF 02 01 00 00 00 43 FF AE 2C'
         req_count = int(response_gpc.split()[19], 16) + 1
-        debug("req_count: " + str(req_count))
+        debug("req_count: " + str(req_count)) if DEBUG == 1 else False
         # req_count = 255  # = max entries
         for devicePos in range(req_count):
             messageCRC_Count = (
                     '00 00 00 00 00 ff 41 04 8c 55 4b 00 16 ff 00 01 00 00 00 ' + "%02x" % devicePos +
                     ' ff 01 03 00 00 00 00 ff 00 00 00 00 ff')
             messageCRC = add_crc(messageCRC_Count)
-            response_gpc = send_receive(messageCRC, s, client)
+            response_gpc = send_receive(messageCRC, simarineSocket, client)
             device_Simarine = parseResponse(response_gpc, devicePos)
             config_SimarineSystem[devicePos] = device_Simarine
 
@@ -339,7 +349,7 @@ def get_pico_config(pico_ip_get, s, client):
         empty_socket(client)
     finally:
         # Close tcp connection
-        s.close()
+        simarineSocket.close()
 
     return config_SimarineSystem
 
@@ -376,7 +386,7 @@ def createSensorList(config_csl):
     switchOnOff = 0
 
     for entry in config_csl.keys():
-        debug(config_csl[entry])
+        debug(config_csl[entry]) if DEBUG == 1 else False
         # Set id_csl
         id_csl = config_csl[entry][0][1]
         # Set type_cls
@@ -640,13 +650,13 @@ def createSensorList(config_csl):
 
             try:
                 sensorListSi[id_csl].update({'name': config_csl[entry][3]})
-                sensorListSi[id_csl].update({'capacity.nominal': config_csl[entry][5][1] * 36 * 12})  # In Joule
-                sensorListSi[id_csl].update({'capacity.C20.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C20.Ah': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C10.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C10.Ah': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C05.Joule': 'calc'})
-                sensorListSi[id_csl].update({'capacity.C05.Ah': 'calc'})
+                sensorListSi[id_csl].update({'capacity.nominal': float((round((config_csl[entry][5][1] * 36 * 12))))})
+                sensorListSi[id_csl].update({'capacity.C20.Joule': (config_csl[entry][5][1] * 36 * 12)})
+                sensorListSi[id_csl].update({'capacity.C20.Ah': config_csl[entry][5][1] / 100})
+                sensorListSi[id_csl].update({'capacity.C10.Joule': (config_csl[entry][6][1] * 36 * 12)})
+                sensorListSi[id_csl].update({'capacity.C10.Ah': config_csl[entry][6][1] / 100})
+                sensorListSi[id_csl].update({'capacity.C05.Joule': (config_csl[entry][7][1] * 36 * 12)})
+                sensorListSi[id_csl].update({'capacity.C05.Ah': config_csl[entry][7][1] / 100})
                 sensorListSi[id_csl].update({'battery_type': battery_type[config_csl[entry][8][1]]})
                 sensorListSi[id_csl].update({'TempSensor is': config_csl[entry][10][1]})
                 sensorListSi[id_csl].update({'stateOfCharge': 'calc'})
@@ -657,10 +667,10 @@ def createSensorList(config_csl):
                 sensorListSi[id_csl].update({'CEF': (config_csl[entry][15][1] / 10)})
                 sensorListSi[id_csl].update({'is.charging': config_csl[entry][16][1]})
 
-            except KeyError:
-                print("Something went wrong - battery")
+            except (KeyError, SystemError):
+                print("Something went wrong - battery" + str(config_csl[entry][3]))
             finally:
-                debug("The 'try except' is finished - battery" + str(config_csl[entry][3]))
+                debug("The 'try except' is finished - battery" + str(config_csl[entry][3])) if DEBUG == 1 else False
 
         if type_csl == 8:
             type_csl = 'tank'
@@ -696,7 +706,7 @@ def createSensorList(config_csl):
             except KeyError:
                 print("Something went wrong tank:" + config_csl[entry][3])
             finally:
-                debug("The 'try except' is finished - tank")
+                debug("The 'try except' is finished - tank") if DEBUG == 1 else False
 
         if type_csl == 3:
             type_csl = 'thermometer'
@@ -1051,7 +1061,7 @@ def readBatt(sensorId, elementId, SensorName, global_sensorList, real_data_eleme
     current = real_data_element[elementgo + 1][1]
 
     global_sensorList[sensorId].update({'stateOfCharge': stateOfCharge})
-    global_sensorList[sensorId].update({'capacity.remaining': capacityRemaining})
+    global_sensorList[sensorId].update({'capacity.remaining A': capacityRemaining})
     global_sensorList[sensorId].update({'voltage': voltage})
 
     if current > 25000:
@@ -1079,13 +1089,13 @@ def infiniteMakeList(global_sensorList, client, old_element, loggerID):
             time.sleep(5)
             pos = pos + 1
             message, addr = client.recvfrom(2048)
-            debug("Received packet with length " + str(len(message)))
+            debug("Received packet with length " + str(len(message))) if DEBUG == 1 else False
             if 100 < len(message) < 2048:
                 break
 
         global_response = BinToHex(message)
 
-        debug("response: " + global_response)
+        debug("response: " + global_response) if DEBUG == 1 else False
 
         if global_response[18] == 'b':
             if len(global_response) == 0:
@@ -1106,9 +1116,12 @@ def infiniteMakeList(global_sensorList, client, old_element, loggerID):
         # 55: [15984, 17996], 56: [65535, 65532], 57: [0, 26940], 58: [32767, 65535], 59: [65253, 37546], 60: [0, 0],
         # 61: [0, 0], 62: [0, 0], 63: [0, 54], 64: [0, 57], 65: [0, 65535], 66: [0, 44], 67: [0, 0], 68: [282, 2829],
         # 69: [5, 58], 70: [300, 3000]}
-        debug(real_data_element)
+        debug(real_data_element) if DEBUG == 1 else False
         for diff in list(dictdiffer.diff(old_element, real_data_element)):
             print("The Diff: " + str(diff))
+            if str("remove") in str(diff):
+                print("remove detected")
+
         old_element = {}
         old_element = copy.deepcopy(real_data_element)
 
@@ -1166,8 +1179,8 @@ def prepare_connection(i, loggerID):
 
     # Assign pico address
     picoIp = "192.168.8.146"
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    debug("Start TCP listener")
+    simarineSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    debug("Start TCP listener") if DEBUG == 1 else False
     # Setup UDP broadcasting listener
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -1180,10 +1193,10 @@ def prepare_connection(i, loggerID):
         for i in range(0, 100):
             while True:
                 try:
-                    global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, s, client)
-                    debug("CONFIG:" + str(global_config))
+                    global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, simarineSocket, client)
+                    debug("CONFIG:" + str(global_config)) if DEBUG == 1 else False
                     global_sensorList = createSensorList(global_config)
-                    debug("SensorList:" + str(global_sensorList))
+                    debug("SensorList:" + str(global_sensorList)) if DEBUG == 1 else False
                     try:
                         with open("SimarineLogger.json", "a") as inJSONFile:
                             comma = inJSONFile.seek(-1, os.SEEK_END)
@@ -1193,8 +1206,8 @@ def prepare_connection(i, loggerID):
                             # item_dict = json.loads(inJSONFile)
                             # print(len(item_dict[0]))
                             inJSONFile.seek(0)
-                    except (JSONDecodeError, io.UnsupportedOperation, OSError):
-                        debug('no file found, or empty/corrupt file')
+                    except (JSONDecodeError, io.UnsupportedOperation, OSError, SystemError):
+                        debug('no file found, or empty/corrupt file') if DEBUG == 1 else False
 
                     with open("SimarineLogger.json", "a") as outfile:
                         print('{ "A' + str(loggerID) + '": [' + json.dumps(global_sensorList) + ' ]}')
@@ -1206,7 +1219,7 @@ def prepare_connection(i, loggerID):
                     print("Try: " + str(i) + " - too many retries, something went wrong")
                     exit(0)
 
-                except (KeyError, LookupError):
+                except (KeyError, LookupError, TypeError):
                     sys.stdout.flush()
                     time.sleep(0.9)
                     empty_socket(client)
@@ -1218,12 +1231,12 @@ def prepare_connection(i, loggerID):
                 print("Try: " + str(i) + " - Refresh in 6 sec.")
                 time.sleep(6)
                 prepare_connection(i, loggerID)
-                # global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, s, client)
+                # global_config: dict[int, dict[Any, Any]] = get_pico_config(picoIp, simarineSocket, client)
             break
     except KeyboardInterrupt:
-        debug("See Pico at KeyboardInterrupt")
+        debug("See Pico at KeyboardInterrupt") if DEBUG == 1 else False
     finally:
-        debug("See Pico at f KeyboardInterrupt")
+        debug("See Pico at f KeyboardInterrupt") if DEBUG == 1 else False
 
     return i
 
